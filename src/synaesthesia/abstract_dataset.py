@@ -32,5 +32,9 @@ class SingleSignalDatasetBase(Dataset):
     def sensor_id(self):
         raise NotImplementedError
 
+    @property
+    def satellite_name(self):
+        raise NotImplementedError
+
     def __repr__(self) -> str:
-        return f"{self.sensor_id}: {len(self)} samples"
+        return f"{self.satellite_name} - {self.sensor_id}: {len(self)} samples"

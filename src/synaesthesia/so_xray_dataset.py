@@ -1,17 +1,17 @@
-from pathlib import Path
-
 from .abstract_dataset import SingleSignalDatasetBase
 
 
-class GlobusDataset(SingleSignalDatasetBase):
-    def __init__(self, folder_path: str | Path):
+class SoXRayDataset(SingleSignalDatasetBase):
+    def __init__(self):
         super().__init__()
-
-        self.folder_path = Path(folder_path)
 
     @property
     def sensor_id(self):
-        return "eui"
+        return "XRay"
+
+    @property
+    def satellite_name(self):
+        return "SO"
 
     def __len__(self):
         raise NotImplementedError
