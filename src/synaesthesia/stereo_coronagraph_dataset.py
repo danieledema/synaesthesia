@@ -11,7 +11,7 @@ class SteroCoronagraphDataset(SingleSignalDatasetBase):
 
     @property
     def satellite_name(self):
-        return "Stero"
+        return "Stereo"
 
     def __len__(self):
         raise NotImplementedError
