@@ -1,7 +1,7 @@
 from .euv_dataset import EuvDataset
 
 
-class SdoEuvDataset(EuvDataset):
+class SoloEuvDataset(EuvDataset):
     @property
     def satellite_name(self):
-        return "SDO"
+        return "SOLO"
