@@ -21,12 +21,16 @@ class EuvDataset(SingleSignalDatasetBase):
             )
 
         timestamps_per_wavelength = {}
+        print(
+            "Warning: reduced resolution of timestamp in get_timestamp_from_filename to enable matches!"
+        )
+
         for wavelength in wavelengths:
             timestamps_per_wavelength[wavelength] = [
                 self.get_timestamp_from_filename(f) for f in self.files[wavelength]
             ]
 
-        timestamp_sets = [set(i) for i in timestamps_per_wavelength.items()]
+        timestamp_sets = [set(i) for i in timestamps_per_wavelength.values()]
         common_timestamps = sorted(list(set.intersection(*timestamp_sets)))
 
         self.timestamps = OrderedDict()
@@ -43,19 +47,27 @@ class EuvDataset(SingleSignalDatasetBase):
         return "EUV"
 
     def __len__(self):
-        return len(self.files)
+        return len(self.timestamps)
 
     def get_data(self, idx):
-        with fits.open(self.files[idx]) as hdul:
-            data = hdul[1].data
+        timestamp = self.get_timestamp(idx)
+        data = {}
+        for wavelength in self.wavelengths:
+            file_idx = self.timestamps[timestamp][wavelength]
+            file_path = self.files[wavelength][file_idx]
+            with fits.open(file_path) as hdul:
+                data[wavelength] = hdul[1].data
         return data
 
     @staticmethod
     def get_timestamp_from_filename(filename):
-        return filename.name.split("_")[-2]
+        return filename.name.split("_")[-2][:13]
 
     def get_timestamp(self, idx):
-        raise NotImplementedError
+        return list(self.timestamps.keys())[idx]
 
     def get_timestamp_idx(self, timestamp):
-        raise NotImplementedError
+        try:
+            return list(self.timestamps.keys()).index(timestamp)
+        except ValueError:
+            raise ValueError("Timestamp not found in dataset")
