@@ -102,27 +102,34 @@ class XRayDataset(SingleSignalDatasetBase):
     def __len__(self):
         return len(self.timestamps)
 
-    def get_data(self, idx):
+    def get_data(self, idx, n_timesteps=1):
         """
-        Retrieves the data at the specified index.
+        Retrieves the data starting at the specified index and includes data for a number of subsequent timesteps.
 
         Args:
-            idx (int): Index of the data point to retrieve.
+            idx (int): Index of the starting data point to retrieve.
+            n_timesteps (int, optional): Number of timesteps to include from the starting index. Defaults to 1.
 
         Returns:
-            tuple: Tuple containing the time and data at the specified index.
+            tuple: Tuple containing the timestamps and a dictionary with arrays of data for the specified range of indices.
         """
-        if idx >= len(self):
-            raise IndexError("Index out of range")
+        if idx >= len(self) or idx + n_timesteps > len(self):
+            raise IndexError("Index out of range or n_timesteps exceeds data length")
 
-        data = {"xrsb_flux": self.xrsb_flux[idx]}
+        timestamps = self.timestamps[idx : idx + n_timesteps]
+
+        # Initialize the dictionary with keys and empty lists
+        data_list = {"xrsb_flux": []}
         for var in self.variables_to_include:
-            data[var] = self.additional_data[var][idx]
+            data_list[var] = []
 
-        return (
-            self.timestamps[idx],
-            data,
-        )  # TO DO: return multiple timestamps and fluxes if needed
+        # Populate the lists with data
+        for i in range(idx, idx + n_timesteps):
+            data_list["xrsb_flux"].append(self.xrsb_flux[i])
+            for var in self.variables_to_include:
+                data_list[var].append(self.additional_data[var][i])
+
+        return timestamps, data_list
 
     def get_timestamp(self, idx):
         """
@@ -138,6 +145,30 @@ class XRayDataset(SingleSignalDatasetBase):
             raise IndexError("Index out of range")
 
         return self.timestamps[idx]
+
+    def get_index_for_timestamp(self, date_str: str):
+        """
+        Retrieves the index for the given timestamp.
+
+        Args:
+            timestamp (str): The timestamp to find the index for, in the format 'YYYYMMDDT%H%M%S%f'.
+
+        Returns:
+            int: The index of the given timestamp in the dataset.
+
+        Raises:
+            ValueError: If the timestamp is not found in the dataset.
+        """
+        # Convert the list of timestamps to strings if they are not already
+        timestamp_strs = [str(ts) for ts in self.timestamps]
+
+        # Find the index of the first timestamp that starts with the given date string
+        for i, ts in enumerate(timestamp_strs):
+            if ts.startswith(date_str):
+                return i
+
+        # If no matching timestamp is found, raise an error
+        raise ValueError(f"No timestamp found for date {date_str}")
 
     @staticmethod
     def get_timestamp_from_filename(filename):

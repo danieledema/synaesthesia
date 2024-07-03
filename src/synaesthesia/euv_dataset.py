@@ -8,7 +8,7 @@ from collections import OrderedDict
 
 class EuvDataset(SingleSignalDatasetBase):
     """
-     Dataset class for EUV (Extreme Ultraviolet) data.
+    Dataset class for EUV (Extreme Ultraviolet) data.
 
     This class manages EUV data stored in FITS files organized by wavelength and timestamp.
 
