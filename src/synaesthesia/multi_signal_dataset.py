@@ -1,11 +1,11 @@
-from torch.utils.data import Dataset
+from abstract_dataset import SingleSignalDatasetBase
 
 
-class MultiSignalDataset(Dataset):
-    def __init__(self, aggregation="all", fill="none", **kwargs):
+class MultiSignalDataset(SingleSignalDatasetBase):
+    def __init__(self, single_signal_datasets: list[SingleSignalDatasetBase], aggregation="all", fill="none"):
         super().__init__()
 
-        self.single_signal_datasets = self.build_single_datasets(**kwargs)
+        self.single_signal_datasets = single_signal_datasets
         n_ssds = len(self.single_signal_datasets)
 
         self.single_signal_dataset_ids = {
