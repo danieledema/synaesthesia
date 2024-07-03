@@ -1,26 +1,16 @@
-from .abstract_dataset import SingleSignalDatasetBase
+from .magnetogram_dataset import MagnetogramDataset
 
+from pathlib import Path
 
-class SoMagDataset(SingleSignalDatasetBase):
-    def __init__(self):
-        super().__init__()
-
-    @property
-    def sensor_id(self):
-        return "MAG"
-
+class SoloMagDataset(MagnetogramDataset):
+    def __init__(
+        self,
+        folder_path: str | Path,
+        channels: list[str] = ["blos", "icnt"],
+        level: int = 2,
+    ):
+        super().__init__(folder_path, channels, level)
+        
     @property
     def satellite_name(self):
-        return "SO"
-
-    def __len__(self):
-        raise NotImplementedError
-
-    def get_data(self, idx):
-        raise NotImplementedError
-
-    def get_timestamp(self, idx):
-        raise NotImplementedError
-
-    def get_timestamp_idx(self, timestamp):
-        raise NotImplementedError
+        return "SOLO"
