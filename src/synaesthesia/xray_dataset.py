@@ -1,13 +1,11 @@
 from pathlib import Path
-from .abstract_dataset import SingleSignalDatasetBase
-
-import netCDF4 as nc
-from ncflag import FlagWrap
 
 import cftime
-
+import netCDF4 as nc
 import numpy as np
-import matplotlib.pyplot as plt
+from ncflag import FlagWrap
+
+from .abstract_dataset import SingleSignalDatasetBase
 
 
 class XRayDataset(SingleSignalDatasetBase):
@@ -21,7 +19,7 @@ class XRayDataset(SingleSignalDatasetBase):
         datatype: str = "flsum",
         goesnr: str = "16",
         level: int = 2,
-        variables_to_include: list[str] = None,
+        variables_to_include: list[str] | None = None,
     ):
         """
         Initializes the X-ray dataset.
