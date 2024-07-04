@@ -19,6 +19,7 @@ class XRayDataset(SingleSignalDatasetBase):
         self,
         folder_path: str | Path,
         datatype: str = "flsum",
+        goesnr: str = "16",
         level: int = 2,
         variables_to_include: list[str] = None,
     ):
@@ -35,19 +36,29 @@ class XRayDataset(SingleSignalDatasetBase):
         super().__init__()
 
         self.folder_path = Path(folder_path)
-        self.files = sorted(list(self.folder_path.glob(f"*l{level}*{datatype}*.nc")))
-        self.datatype = datatype
-        self.variables_to_include = (
-            variables_to_include
-            if variables_to_include is not None
-            else [
-                "status",
-                "background_flux",
-                "flare_class",
-                "integrated_flux",
-                "flare_id",
-            ]
+        self.files = sorted(
+            list(self.folder_path.glob(f"*l{level}*{datatype}_g{goesnr}*.nc"))
         )
+        self.datatype = datatype
+        self.goesnr = goesnr
+
+        if datatype == "avg1m":
+            self.variables_to_include = []
+        else:
+            self.variables_to_include = (
+                variables_to_include
+                if variables_to_include is not None
+                else [
+                    "status",
+                    "background_flux",
+                    "flare_class",
+                    "integrated_flux",
+                    "flare_id",
+                ]
+            )
+
+        if self.files == []:
+            raise ValueError("No files found for the specified parameters.")
 
         all_times = []
         all_fluxes = []
