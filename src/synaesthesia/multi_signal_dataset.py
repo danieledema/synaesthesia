@@ -1,8 +1,14 @@
-from abstract_dataset import SingleSignalDatasetBase
+from .abstract_dataset import SingleSignalDatasetBase
+from tqdm import tqdm
 
 
 class MultiSignalDataset(SingleSignalDatasetBase):
-    def __init__(self, single_signal_datasets: list[SingleSignalDatasetBase], aggregation="all", fill="none"):
+    def __init__(
+        self,
+        single_signal_datasets: list[SingleSignalDatasetBase],
+        aggregation="all",
+        fill="none",
+    ):
         super().__init__()
 
         self.single_signal_datasets = single_signal_datasets
@@ -21,7 +27,8 @@ class MultiSignalDataset(SingleSignalDatasetBase):
             pass
 
         elif aggregation == "common":
-            for k in list(self.timestamp_dict.keys()):
+            print("Aggregating common timestamps")
+            for k in tqdm(list(self.timestamp_dict.keys())):
                 for ssd in self.single_signal_datasets:
                     if k not in ssd:
                         del self.timestamp_dict[k]
@@ -37,7 +44,8 @@ class MultiSignalDataset(SingleSignalDatasetBase):
             raise ValueError(f"Aggregation {aggregation} not valid.")
 
         if fill == "none":
-            for k in self.timestamp_dict:
+            print("Filling missing timestamps: none")
+            for k in tqdm(self.timestamp_dict):
                 for i, ssd in enumerate(self.single_signal_datasets):
                     self.timestamp_dict[k][i] = ssd.get_timestamp_idx(k)
 
@@ -125,8 +133,8 @@ class MultiSignalDataset(SingleSignalDatasetBase):
 
     def __repr__(self) -> str:
         print_string = f"MultiSignalDataset: {len(self)} samples\n"
-        print_string += f"\tDataset: {self.dataset_type}\n"
-        print_string += f"\trun: {self.run}\n"
+        # print_string += f"\tDataset: {self.dataset_type}\n"
+        # print_string += f"\trun: {self.run}\n"
         for dataset in self.single_signal_datasets:
             print_string += f"\t{dataset}\n"
 
@@ -134,7 +142,7 @@ class MultiSignalDataset(SingleSignalDatasetBase):
 
     @property
     def dataset_type(self) -> str:
-        raise NotImplementedError
+        return "MultiSignalDataset"
 
     @property
     def run(self) -> str:

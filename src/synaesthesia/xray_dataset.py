@@ -148,7 +148,7 @@ class XRayDataset(SingleSignalDatasetBase):
 
         return self.timestamps[idx]
 
-    def get_index_for_timestamp(self, date_str: str):
+    def get_timestamp_idx(self, date_str: str):
         """
         Retrieves the index for the given timestamp.
 

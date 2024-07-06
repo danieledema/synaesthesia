@@ -25,7 +25,7 @@ class SingleSignalDatasetBase(Dataset):
         try:
             _ = self.get_timestamp_idx(t)
             return True
-        except IndexError:
+        except (IndexError, KeyError):
             return False
 
     @property
