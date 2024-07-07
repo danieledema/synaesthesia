@@ -1,5 +1,6 @@
-from .abstract_dataset import SingleSignalDatasetBase
 from tqdm import tqdm
+
+from .abstract_dataset import SingleSignalDatasetBase
 
 
 class MultiSignalDataset(SingleSignalDatasetBase):

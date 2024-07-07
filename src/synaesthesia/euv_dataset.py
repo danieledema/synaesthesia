@@ -1,9 +1,9 @@
+from collections import OrderedDict
 from pathlib import Path
 
 from astropy.io import fits
 
 from .abstract_dataset import SingleSignalDatasetBase
-from collections import OrderedDict
 
 
 class EuvDataset(SingleSignalDatasetBase):

@@ -1,14 +1,12 @@
+import itertools
+from collections import OrderedDict
 from pathlib import Path
 
+import numpy as np
 from astropy.io import fits
-
-from .abstract_dataset import SingleSignalDatasetBase
-from collections import OrderedDict
-
 from scipy import ndimage
 
-import itertools
-import numpy as np
+from .abstract_dataset import SingleSignalDatasetBase
 
 
 class MagnetogramDataset(SingleSignalDatasetBase):

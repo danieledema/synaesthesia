@@ -1,6 +1,6 @@
-from .xray_dataset import XRayDataset
-
 from pathlib import Path
+
+from .xray_dataset import XRayDataset
 
 
 class GoesXRayDataset(XRayDataset):

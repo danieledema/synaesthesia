@@ -1,6 +1,6 @@
-from .euv_dataset import EuvDataset
-
 from pathlib import Path
+
+from .euv_dataset import EuvDataset
 
 
 class SoloEuvDataset(EuvDataset):
