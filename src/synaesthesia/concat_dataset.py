@@ -1,16 +1,14 @@
-from .abstract_dataset import SingleSignalDatasetBase
-from .boundary_multi_signal_dataset import BoundaryMultiSignalDataset
-from .multi_signal_dataset import MultiSignalDataset
+from .abstract_dataset import DatasetBase
 
 
-class CustomConcatDataset(SingleSignalDatasetBase):
+class CustomConcatDataset(DatasetBase):
     """
     A specialisation of the ConcatDataset where the idx is returned together
     with the data.
     Used in the datamodule.
     """
 
-    def __init__(self, datasets: list[MultiSignalDataset | BoundaryMultiSignalDataset]):
+    def __init__(self, datasets: list[DatasetBase]):
         super().__init__()
 
         self.datasets = datasets
@@ -57,7 +55,13 @@ class CustomConcatDataset(SingleSignalDatasetBase):
     def __repr__(self) -> str:
         print_string = f"Concat dataset: {len(self)} samples\n"
         print_string += f"Datasets: {len(self.datasets)}\n"
+
         for i, d in enumerate(self.datasets):
-            print_string += f"{i} {d}"
+            inner_repr = repr(d)
+            lines = inner_repr.split("\n")
+            inner_repr = "\n".join(["\t" + line for line in lines])
+
+            print_string += f"{i} -------------\n"
+            print_string += inner_repr
             print_string += "------------------\n"
         return print_string
