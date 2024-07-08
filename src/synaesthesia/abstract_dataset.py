@@ -1,18 +1,20 @@
+from typing import Any
+
 from torch.utils.data import Dataset
 
 
-class SingleSignalDatasetBase(Dataset):
+class DatasetBase(Dataset):
     def __getitem__(self, idx):
-        return {
+        data_sample = {
             "idx": idx,
             "timestamp": self.get_timestamp(idx),
-            "data": self.get_data(idx),
         }
+        data_sample |= (self.get_data(idx),)
 
     def __len__(self):
         raise NotImplementedError
 
-    def get_data(self, idx):
+    def get_data(self, idx) -> dict[str, Any]:
         raise NotImplementedError
 
     def get_timestamp(self, idx):
