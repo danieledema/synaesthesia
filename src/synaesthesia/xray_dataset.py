@@ -41,62 +41,57 @@ class XRayDataset(SingleSignalDatasetBase):
         self.goesnr = goesnr
 
         if datatype == "avg1m":
-            self.variables_to_include = []
-        else:
-            self.variables_to_include = (
-                variables_to_include
-                if variables_to_include is not None
-                else [
-                    "status",
-                    "background_flux",
-                    "flare_class",
-                    "integrated_flux",
-                    "flare_id",
-                ]
-            )
+            assert variables_to_include is [
+                "xrsb_flux"
+            ], "Only xrsb_flux is available for avg1m data"
+        self.variables_to_include = (
+            variables_to_include
+            if variables_to_include is not None
+            else [
+                "xrsb_flux",
+                "status",
+                "background_flux",
+                "flare_class",
+                "integrated_flux",
+                "flare_id",
+            ]
+        )
 
         if self.files == []:
             raise ValueError("No files found for the specified parameters.")
 
         all_times = []
-        all_fluxes = []
-        additional_data = {var: [] for var in self.variables_to_include}
+        data = {var: [] for var in self.variables_to_include}
 
         for file in self.files:
             with nc.Dataset(file) as nc_in:
                 times = cftime.num2pydate(
                     nc_in.variables["time"][:], nc_in.variables["time"].units
                 )
-                xrsb_flux = np.ma.filled(
-                    nc_in.variables["xrsb_flux"][:], fill_value=np.nan
-                )
-
-                if datatype == "avg1m":
-                    xrsb_flags = FlagWrap.init_from_netcdf(nc_in.variables["xrsb_flag"])
-                    # set any points that are NOT good_data to nan
-                    good_data = xrsb_flags.get_flag("good_data")
-                    xrsb_flux[~good_data] = np.nan
 
                 for var in self.variables_to_include:
                     if var in nc_in.variables:
                         var_data = np.ma.filled(
                             nc_in.variables[var][:], fill_value=np.nan
                         )
-                        additional_data[var].extend(var_data)
+                        data[var].extend(var_data)
+                        if datatype == "avg1m":
+                            xrsb_flags = FlagWrap.init_from_netcdf(
+                                nc_in.variables["xrsb_flag"]
+                            )
+                            # set any points that are NOT good_data to nan
+                            good_data = xrsb_flags.get_flag("good_data")
+                            var_data["xrsb_flux"][~good_data] = np.nan
                     else:
                         raise ValueError(f"Variable '{var}' not found in file {file}")
 
                 all_times.extend(times)
-                all_fluxes.extend(xrsb_flux)
 
         # Convert times to the desired format 'YYYYMMDDTHHMMSSfff'
         self.timestamps = np.array(
             [time.strftime("%Y%m%dT%H%M%S%f") for time in all_times]
         )
-        self.xrsb_flux = np.array(all_fluxes)
-        self.additional_data = {
-            var: np.array(data) for var, data in additional_data.items()
-        }
+        self.data = {var: np.array(data) for var, data in data.items()}
 
     @property
     def sensor_id(self):
@@ -125,20 +120,18 @@ class XRayDataset(SingleSignalDatasetBase):
         if idx >= len(self) or idx + n_timesteps > len(self):
             raise IndexError("Index out of range or n_timesteps exceeds data length")
 
-        timestamps = self.timestamps[idx : idx + n_timesteps]
-
         # Initialize the dictionary with keys and empty lists
-        data_list = {"xrsb_flux": []}
-        for var in self.variables_to_include:
-            data_list[var] = []
+        data_list = {var: [] for var in self.variables_to_include}
 
         # Populate the lists with data
         for i in range(idx, idx + n_timesteps):
-            data_list["xrsb_flux"].append(self.xrsb_flux[i])
             for var in self.variables_to_include:
-                data_list[var].append(self.additional_data[var][i])
-
-        return timestamps, data_list
+                data_list[var].append(self.data[var][i])
+        if n_timesteps == 1:
+            return data_list
+        else:
+            timestamps = self.timestamps[idx : idx + n_timesteps]
+            return timestamps, data_list
 
     def get_timestamp(self, idx):
         """
@@ -155,7 +148,7 @@ class XRayDataset(SingleSignalDatasetBase):
 
         return self.timestamps[idx]
 
-    def get_index_for_timestamp(self, date_str: str):
+    def get_timestamp_idx(self, date_str: str):
         """
         Retrieves the index for the given timestamp.
 
