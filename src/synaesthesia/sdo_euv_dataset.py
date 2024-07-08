@@ -9,8 +9,9 @@ class SdoEuvDataset(EuvDataset):
         folder_path: str | Path,
         wavelengths: list[str] = ["94", "131", "171", "193", "211", "304", "335"],
         level: int = 2,
+        time_threshold: int = 1,
     ):
-        super().__init__(folder_path, wavelengths, level)
+        super().__init__(folder_path, wavelengths, level, time_threshold)
 
     @property
     def satellite_name(self):
