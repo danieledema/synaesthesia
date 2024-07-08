@@ -5,10 +5,10 @@ from pathlib import Path
 from astropy.io import fits
 from tqdm import tqdm
 
-from .abstract_dataset import SingleSignalDatasetBase
+from .abstract_dataset import DatasetBase
 
 
-class EuvDataset(SingleSignalDatasetBase):
+class EuvDataset(DatasetBase):
     """
     Dataset class for EUV (Extreme Ultraviolet) data.
 
