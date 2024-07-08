@@ -28,7 +28,7 @@ class DatasetBase(Dataset):
         try:
             _ = self.get_timestamp_idx(t)
             return True
-        except (IndexError, KeyError):
+        except (IndexError, KeyError, ValueError):
             return False
 
     @property

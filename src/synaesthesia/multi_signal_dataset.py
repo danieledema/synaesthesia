@@ -1,5 +1,15 @@
-from .abstract_dataset import SingleSignalDatasetBase
 from tqdm import tqdm
+from datetime import datetime, timedelta
+
+from .abstract_dataset import SingleSignalDatasetBase
+
+
+def convert_to_datetime(timestamp):
+    # Adjust this function based on the format of your timestamps
+    try:
+        return datetime.strptime(timestamp, "%Y%m%dT%H%M")
+    except ValueError:
+        return datetime.strptime(timestamp, "%Y%m%dT%H%M%S%f")
 
 
 class MultiSignalDataset(SingleSignalDatasetBase):
@@ -8,6 +18,7 @@ class MultiSignalDataset(SingleSignalDatasetBase):
         single_signal_datasets: list[SingleSignalDatasetBase],
         aggregation="all",
         fill="none",
+        time_cut=60,  # in minutes
     ):
         super().__init__()
 
@@ -84,7 +95,56 @@ class MultiSignalDataset(SingleSignalDatasetBase):
                         self.timestamp_dict[t1][i] = len(ssd) - 1
 
         elif fill == "closest":
-            raise NotImplementedError
+            timestamps = sorted(self.timestamp_dict.keys(), key=convert_to_datetime)
+            timestamps_dt = [convert_to_datetime(ts) for ts in timestamps]
+
+            found = False
+            while not found:
+                found = True
+                for ssd in self.single_signal_datasets:
+                    if convert_to_datetime(ssd.get_timestamp(0)) > timestamps_dt[0]:
+                        k = timestamps.pop(0)
+                        timestamps_dt.pop(0)
+                        del self.timestamp_dict[k]
+                        found = False
+                        break
+
+            for i, ssd in enumerate(self.single_signal_datasets):
+                for idx in range(len(ssd)):
+                    current_ts = convert_to_datetime(ssd.get_timestamp(idx))
+                    if current_ts >= timestamps_dt[0]:
+                        if idx == 0 or abs(current_ts - timestamps_dt[0]) < abs(
+                            convert_to_datetime(ssd.get_timestamp(idx - 1))
+                            - timestamps_dt[0]
+                        ):
+                            self.timestamp_dict[timestamps[0]][i] = idx
+                        else:
+                            self.timestamp_dict[timestamps[0]][i] = idx - 1
+                        break
+
+            for t0, t1 in zip(timestamps_dt[:-1], timestamps_dt[1:]):
+                t0_key = timestamps[timestamps_dt.index(t0)]
+                t1_key = timestamps[timestamps_dt.index(t1)]
+                for i, ssd in enumerate(self.single_signal_datasets):
+                    idx_before = self.timestamp_dict[t0_key][i]
+                    closest_idx = None
+                    closest_diff = timedelta(minutes=time_cut)
+                    for idx in range(idx_before, len(ssd)):
+                        current_ts = convert_to_datetime(ssd.get_timestamp(idx))
+                        current_diff = abs(current_ts - t1)
+                        if current_diff < closest_diff:
+                            closest_diff = current_diff
+                            closest_idx = idx
+
+                        if current_ts >= t1:
+                            break
+
+                    if closest_idx is not None:
+                        self.timestamp_dict[t1_key][i] = closest_idx
+                    else:
+                        raise ValueError(
+                            f"No sufficiently close timestamp found for index {i} between {t0} and {t1}."
+                        )
 
         else:
             raise ValueError(f"Fill {fill} not valid.")

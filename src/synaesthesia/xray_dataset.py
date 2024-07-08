@@ -41,7 +41,7 @@ class XRayDataset(DatasetBase):
         self.goesnr = goesnr
 
         if datatype == "avg1m":
-            assert variables_to_include is [
+            assert variables_to_include == [
                 "xrsb_flux"
             ], "Only xrsb_flux is available for avg1m data"
         self.variables_to_include = (
@@ -74,14 +74,15 @@ class XRayDataset(DatasetBase):
                         var_data = np.ma.filled(
                             nc_in.variables[var][:], fill_value=np.nan
                         )
-                        data[var].extend(var_data)
                         if datatype == "avg1m":
                             xrsb_flags = FlagWrap.init_from_netcdf(
                                 nc_in.variables["xrsb_flag"]
                             )
                             # set any points that are NOT good_data to nan
                             good_data = xrsb_flags.get_flag("good_data")
-                            var_data["xrsb_flux"][~good_data] = np.nan
+                            var_data[~good_data] = np.nan
+                        data[var].extend(var_data)
+
                     else:
                         raise ValueError(f"Variable '{var}' not found in file {file}")
 

@@ -1,12 +1,12 @@
-from .xray_dataset import XRayDataset
-
 from pathlib import Path
 
+from .xray_dataset import XRayDataset
 
-class GoesXRay_Flarelabel_Dataset(XRayDataset):
+
+class GoesXRayFlarelabelDataset(XRayDataset):
     variables_to_include = ["flare_class"]
     datatype = "flsum"
-    severities = ["NO_FLARE", "A", "B", "C", "M", "X"]
+    severities = ["NO_FLARE", "C", "M", "X"]
 
     def __init__(
         self,
@@ -18,6 +18,17 @@ class GoesXRay_Flarelabel_Dataset(XRayDataset):
         super().__init__(
             folder_path, self.datatype, goesnr, level, self.variables_to_include
         )
+
+    def get_data(self, idx, n_timesteps=1):
+        data_raw = super().get_data(idx)
+        for s, severity in enumerate(self.severities):
+            if data_raw["flare_class"][0].startswith(severity):
+                data_raw["flare_class"][0] = s
+                break
+        else:
+            data_raw["flare_class"][0] = 0
+
+        return data_raw
 
     @property
     def satellite_name(self):
