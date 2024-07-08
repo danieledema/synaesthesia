@@ -1,21 +1,19 @@
-from tqdm import tqdm
 from datetime import datetime, timedelta
 
-from .abstract_dataset import SingleSignalDatasetBase
+from tqdm import tqdm
+
+from .abstract_dataset import DatasetBase
 
 
 def convert_to_datetime(timestamp):
     # Adjust this function based on the format of your timestamps
-    try:
-        return datetime.strptime(timestamp, "%Y%m%dT%H%M")
-    except ValueError:
-        return datetime.strptime(timestamp, "%Y%m%dT%H%M%S%f")
+    return datetime.strptime(timestamp, "%Y%m%dT%H%M%S%f")
 
 
-class MultiSignalDataset(SingleSignalDatasetBase):
+class MultiSignalDataset(DatasetBase):
     def __init__(
         self,
-        single_signal_datasets: list[SingleSignalDatasetBase],
+        single_signal_datasets: list[DatasetBase],
         aggregation="all",
         fill="none",
         time_cut=60,  # in minutes
@@ -24,10 +22,6 @@ class MultiSignalDataset(SingleSignalDatasetBase):
 
         self.single_signal_datasets = single_signal_datasets
         n_ssds = len(self.single_signal_datasets)
-
-        self.single_signal_dataset_ids = {
-            ssd.sensor_id: i for i, ssd in enumerate(self.single_signal_datasets)
-        }
 
         self.timestamp_dict = {}
         for ssd in self.single_signal_datasets:
@@ -167,43 +161,39 @@ class MultiSignalDataset(SingleSignalDatasetBase):
         for dataset, i in zip(
             self.single_signal_datasets, self.timestamp_dict[timestamp]
         ):
-            return_dict[dataset.sensor_id] = None
+            return_dict[f"{dataset.satellite_name}_{dataset.sensor_id}"] = None
 
             if i is not None:
-                return_dict[dataset.sensor_id] = dataset.get_data(i)
+                return_dict[f"{dataset.satellite_name}_{dataset.sensor_id}"] = (
+                    dataset.get_data(i)
+                )
 
         return return_dict
-
-    def get_data_by_id(self, idx, id):
-        assert id in self.single_signal_dataset_ids
-        ssd_idx = self.single_signal_dataset_ids[id]
-
-        timestamp = self.get_timestamp(idx)
-        ssd_timestamp = self.timestamp_dict[timestamp][ssd_idx]
-        if ssd_timestamp is None:
-            return None
-
-        return self.single_signal_datasets[ssd_idx].get_data(ssd_timestamp)
 
     def get_timestamp(self, idx):
         return self.timestamps[idx]
 
-    def build_single_datasets(self, **kwargs):
-        raise NotImplementedError
+    def get_timestamp_idx(self, timestamp):
+        return self.timestamps.index(timestamp)
+
+    @property
+    def sensor_id(self):
+        return "multi"
+
+    @property
+    def satellite_id(self):
+        return "multi"
 
     def __repr__(self) -> str:
-        print_string = f"MultiSignalDataset: {len(self)} samples\n"
-        # print_string += f"\tDataset: {self.dataset_type}\n"
-        # print_string += f"\trun: {self.run}\n"
-        for dataset in self.single_signal_datasets:
-            print_string += f"\t{dataset}\n"
+        print_string = f"MultiSignalDataset - len() samples\n"
+        print_string += f"Datasets: {len(self.single_signal_datasets)}\n"
 
+        for i, d in enumerate(self.single_signal_datasets):
+            inner_repr = repr(d)
+            lines = inner_repr.split("\n")
+            inner_repr = "\n".join(["\t" + line for line in lines])
+
+            print_string += f"{i} -------------\n"
+            print_string += inner_repr
+            print_string += "------------------\n"
         return print_string
-
-    @property
-    def dataset_type(self) -> str:
-        return "MultiSignalDataset"
-
-    @property
-    def run(self) -> str:
-        raise NotImplementedError
