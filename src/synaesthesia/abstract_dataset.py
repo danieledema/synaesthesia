@@ -39,5 +39,9 @@ class DatasetBase(Dataset):
     def satellite_name(self):
         raise NotImplementedError
 
+    @property
+    def timestamps(self):
+        raise NotImplementedError
+
     def __repr__(self) -> str:
         return f"{self.satellite_name} - {self.sensor_id}: {len(self)} samples"

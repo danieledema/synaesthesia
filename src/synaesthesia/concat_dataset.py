@@ -52,6 +52,12 @@ class CustomConcatDataset(DatasetBase):
         i, idx2 = self.find_right_datset(idx)
         return self.datasets[i].get_timestamp(idx2)
 
+    @property
+    def timestamps(self):
+        for d in self.datasets:
+            for t in d.timestamps():
+                yield t
+
     def __repr__(self) -> str:
         print_string = f"Concat dataset: {len(self)} samples\n"
         print_string += f"Datasets: {len(self.datasets)}\n"

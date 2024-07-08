@@ -89,10 +89,14 @@ class XRayDataset(DatasetBase):
                 all_times.extend(times)
 
         # Convert times to the desired format 'YYYYMMDDTHHMMSSfff'
-        self.timestamps = np.array(
+        self._timestamps = np.array(
             [time.strftime("%Y%m%dT%H%M%S%f") for time in all_times]
         )
         self.data = {var: np.array(data) for var, data in data.items()}
+
+    @property
+    def timestamps(self):
+        return self._timestamps
 
     @property
     def sensor_id(self):

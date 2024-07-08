@@ -79,7 +79,11 @@ class EuvDataset(DatasetBase):
             if len(self.data_dict[timestamp]) != len(wavelengths):
                 del self.data_dict[timestamp]
 
-        self.timestamps = list(self.data_dict.keys())
+        self._timestamps = list(self.data_dict.keys())
+
+    @property
+    def timestamps(self):
+        return self._timestamps
 
     def find_closest_timestamp(self, timestamp, timestamps):
         """
