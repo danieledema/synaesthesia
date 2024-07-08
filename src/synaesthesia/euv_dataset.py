@@ -1,9 +1,11 @@
+from collections import OrderedDict
+from datetime import datetime
 from pathlib import Path
 
 from astropy.io import fits
+from tqdm import tqdm
 
 from .abstract_dataset import SingleSignalDatasetBase
-from collections import OrderedDict
 
 
 class EuvDataset(SingleSignalDatasetBase):
@@ -19,7 +21,13 @@ class EuvDataset(SingleSignalDatasetBase):
         files (dict): Dictionary mapping each wavelength to a sorted list of file paths.
     """
 
-    def __init__(self, folder_path: str | Path, wavelengths: list[str], level: int = 2):
+    def __init__(
+        self,
+        folder_path: str | Path,
+        wavelengths: list[str],
+        level: int = 2,
+        time_threshold: int = 1,
+    ):
         """
         Initializes the EUV dataset.
 
@@ -27,12 +35,14 @@ class EuvDataset(SingleSignalDatasetBase):
             folder_path (str or Path): Path to the folder containing the data files.
             wavelengths (list of str): List of wavelengths to load data for.
             level (int, optional): Level of the data hierarchy (default is 2).
+            time_threshold (int, optional): Time threshold for matching timestamps (default is 1 second).
         """
         super().__init__()
 
         self.folder_path = Path(folder_path)
         self.wavelengths = wavelengths
         self.level = level
+        self.time_threshold = time_threshold
 
         # Initialize an empty dictionary to hold file paths for each wavelength
         self.files = {}
@@ -45,9 +55,6 @@ class EuvDataset(SingleSignalDatasetBase):
 
         # Initialize an OrderedDict to store common timestamps and their corresponding data indices
         timestamps_per_wavelength = {}
-        print(
-            "Warning: reduced resolution of timestamp in get_timestamp_from_filename to enable matches!"
-        )
 
         # Populate timestamps_per_wavelength with lists of timestamps for each wavelength
         for wavelength in wavelengths:
@@ -55,20 +62,43 @@ class EuvDataset(SingleSignalDatasetBase):
                 self.get_timestamp_from_filename(f) for f in self.files[wavelength]
             ]
 
-        # Find common timestamps across all wavelengths
-        timestamp_sets = [set(i) for i in timestamps_per_wavelength.values()]
-        common_timestamps = sorted(list(set.intersection(*timestamp_sets)))
-
         # Initialize an OrderedDict to store common timestamps and their corresponding data indices
-        self.timestamps = OrderedDict()
-        for timestamp in common_timestamps:
-            self.timestamps[timestamp] = {}
+        self.data_dict = OrderedDict()
+        for i, timestamp in enumerate(timestamps_per_wavelength[wavelengths[0]]):
+            self.data_dict[timestamp] = {wavelengths[0]: i}
+        common_timestamps = list(self.data_dict.keys())
 
-        # Populate self.timestamps with data indices for each wavelength
-        for wavelength in wavelengths:
+        # Populate self.data_dict with data indices for each wavelength
+        for wavelength in tqdm(wavelengths[1:]):
             for i, timestamp in enumerate(timestamps_per_wavelength[wavelength]):
-                if timestamp in self.timestamps:
-                    self.timestamps[timestamp][wavelength] = i
+                if (
+                    timestamp := self.find_closest_timestamp(
+                        timestamp, common_timestamps
+                    )
+                    is not None
+                ):
+                    self.data_dict[timestamp][wavelength] = i
+
+        self.timestamps = list(self.data_dict.keys())
+
+    def find_closest_timestamp(self, timestamp, timestamps):
+        """
+        Finds the closest timestamp to the given timestamp.
+
+        Args:
+            timestamp (str): Timestamp to find the closest match for.
+            timestamps (list): List of common timestamps to search for a match.
+
+        Returns:
+            str: Closest matching timestamp.
+        """
+        format = "%Y%m%dT%H%M%S%f"
+        timestamp = datetime.strptime(timestamp, format)
+        for t in timestamps:
+            t = datetime.strptime(t, format)
+            if abs(t - timestamp).total_seconds() <= self.time_threshold:
+                return t
+        return None
 
     @property
     def sensor_id(self):
@@ -102,7 +132,7 @@ class EuvDataset(SingleSignalDatasetBase):
         timestamp = self.get_timestamp(idx)
         data = {}
         for wavelength in self.wavelengths:
-            file_idx = self.timestamps[timestamp][wavelength]
+            file_idx = self.data_dict[timestamp][wavelength]
             file_path = self.files[wavelength][file_idx]
             with fits.open(file_path) as hdul:
                 data[wavelength] = hdul[1].data
@@ -119,7 +149,7 @@ class EuvDataset(SingleSignalDatasetBase):
         Returns:
             str: Extracted timestamp.
         """
-        return filename.name.split("_")[-2][:13]
+        return filename.name.split("_")[-2]
 
     def get_timestamp(self, idx):
         """
@@ -131,7 +161,7 @@ class EuvDataset(SingleSignalDatasetBase):
         Returns:
             str: Timestamp corresponding to the specified index.
         """
-        return list(self.timestamps.keys())[idx]
+        return self.timestamps[idx]
 
     def get_timestamp_idx(self, timestamp):
         """
@@ -147,6 +177,6 @@ class EuvDataset(SingleSignalDatasetBase):
             ValueError: If the timestamp is not found in the dataset.
         """
         try:
-            return list(self.timestamps.keys()).index(timestamp)
+            return self.timestamps.index(timestamp)
         except ValueError:
             raise ValueError("Timestamp not found in dataset")
