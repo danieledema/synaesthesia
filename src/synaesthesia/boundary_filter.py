@@ -1,10 +1,10 @@
-from .abstract_dataset import SingleSignalDatasetBase
+from .abstract_dataset import DatasetBase
 
 
-class BoundaryFilteredDataset(SingleSignalDatasetBase):
+class BoundaryFilteredDataset(DatasetBase):
     def __init__(
         self,
-        dataset: SingleSignalDatasetBase,
+        dataset: DatasetBase,
         boundaries: list[tuple[str, str]],
     ):
         super().__init__()
