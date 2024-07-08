@@ -10,7 +10,7 @@ class GoesXRayDataset(XRayDataset):
         datatype: str = "flsum",
         goesnr: str = "16",
         level: int = 2,
-        variables_to_include: list[str] = None,
+        variables_to_include: list[str] | None = None,
     ):
 
         super().__init__(folder_path, datatype, goesnr, level, variables_to_include)
