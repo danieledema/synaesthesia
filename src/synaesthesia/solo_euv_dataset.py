@@ -9,7 +9,7 @@ class SoloEuvDataset(EuvDataset):
         folder_path: str | Path,
         wavelengths: list[str] = ["174", "304"],
         level: int = 2,
-        time_threshold: int = 1,
+        time_threshold: int = 60,
     ):
         super().__init__(folder_path, wavelengths, level, time_threshold)
 

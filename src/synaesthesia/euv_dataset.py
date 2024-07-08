@@ -26,7 +26,7 @@ class EuvDataset(SingleSignalDatasetBase):
         folder_path: str | Path,
         wavelengths: list[str],
         level: int = 2,
-        time_threshold: int = 1,
+        time_threshold: int = 60,
     ):
         """
         Initializes the EUV dataset.
@@ -71,13 +71,13 @@ class EuvDataset(SingleSignalDatasetBase):
         # Populate self.data_dict with data indices for each wavelength
         for wavelength in tqdm(wavelengths[1:]):
             for i, timestamp in enumerate(timestamps_per_wavelength[wavelength]):
-                if (
-                    timestamp := self.find_closest_timestamp(
-                        timestamp, common_timestamps
-                    )
-                    is not None
-                ):
+                timestamp = self.find_closest_timestamp(timestamp, common_timestamps)
+                if timestamp:
                     self.data_dict[timestamp][wavelength] = i
+
+        for timestamp in list(self.data_dict.keys()):
+            if len(self.data_dict[timestamp]) != len(wavelengths):
+                del self.data_dict[timestamp]
 
         self.timestamps = list(self.data_dict.keys())
 
@@ -95,8 +95,8 @@ class EuvDataset(SingleSignalDatasetBase):
         format = "%Y%m%dT%H%M%S%f"
         timestamp = datetime.strptime(timestamp, format)
         for t in timestamps:
-            t = datetime.strptime(t, format)
-            if abs(t - timestamp).total_seconds() <= self.time_threshold:
+            t_tmp = datetime.strptime(t, format)
+            if abs(t_tmp - timestamp).total_seconds() <= self.time_threshold:
                 return t
         return None
 
