@@ -38,9 +38,8 @@ class MultiSignalDataset(DatasetBase):
 
         elif aggregation[:2] == "I:":
             idx = int(aggregation[2:])
-            for k in list(self.timestamp_dict.keys()):
-                if k not in self.single_signal_datasets[idx]:
-                    del self.timestamp_dict[k]
+            i_timestamps = set(self.single_signal_datasets[idx].timestamps)
+            self.timestamp_dict = {k: [None] * n_ssds for k in i_timestamps}
 
         else:
             raise ValueError(f"Aggregation {aggregation} not valid.")
@@ -87,7 +86,7 @@ class MultiSignalDataset(DatasetBase):
                         self.timestamp_dict[t1][i] = len(ssd) - 1
 
         elif fill == "closest":
-            timestamps = sorted(self.timestamp_dict.keys(), key=convert_to_datetime)
+            timestamps = sorted(self.timestamp_dict.keys())
             timestamps_dt = [convert_to_datetime(ts) for ts in timestamps]
 
             found = False
