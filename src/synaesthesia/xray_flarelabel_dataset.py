@@ -19,14 +19,14 @@ class GoesXRayFlarelabelDataset(XRayDataset):
             folder_path, self.datatype, goesnr, level, self.variables_to_include
         )
 
-    def get_data(self, idx, n_timesteps=1):
+    def get_data(self, idx):
         data_raw = super().get_data(idx)
         for s, severity in enumerate(self.severities):
-            if data_raw["flare_class"][0].startswith(severity):
-                data_raw["flare_class"][0] = s
+            if data_raw["flare_class"].startswith(severity):
+                data_raw["flare_class"] = s
                 break
         else:
-            data_raw["flare_class"][0] = 0
+            data_raw["flare_class"] = 0
 
         return data_raw
 
