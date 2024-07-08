@@ -18,7 +18,7 @@ class MultiSignalDataset(SingleSignalDatasetBase):
         single_signal_datasets: list[SingleSignalDatasetBase],
         aggregation="all",
         fill="none",
-        time_cut=60,
+        time_cut=60,  # in minutes
     ):
         super().__init__()
 
