@@ -5,10 +5,10 @@ import netCDF4 as nc
 import numpy as np
 from ncflag import FlagWrap
 
-from .abstract_dataset import SingleSignalDatasetBase
+from .abstract_dataset import DatasetBase
 
 
-class XRayDataset(SingleSignalDatasetBase):
+class XRayDataset(DatasetBase):
     """
     Dataset class for X-ray data.
     """
@@ -106,7 +106,7 @@ class XRayDataset(SingleSignalDatasetBase):
     def __len__(self):
         return len(self.timestamps)
 
-    def get_data(self, idx, n_timesteps=1):
+    def get_data(self, idx):
         """
         Retrieves the data starting at the specified index and includes data for a number of subsequent timesteps.
 
@@ -117,21 +117,10 @@ class XRayDataset(SingleSignalDatasetBase):
         Returns:
             tuple: Tuple containing the timestamps and a dictionary with arrays of data for the specified range of indices.
         """
-        if idx >= len(self) or idx + n_timesteps > len(self):
-            raise IndexError("Index out of range or n_timesteps exceeds data length")
-
-        # Initialize the dictionary with keys and empty lists
-        data_list = {var: [] for var in self.variables_to_include}
-
-        # Populate the lists with data
-        for i in range(idx, idx + n_timesteps):
-            for var in self.variables_to_include:
-                data_list[var].append(self.data[var][i])
-        if n_timesteps == 1:
-            return data_list
-        else:
-            timestamps = self.timestamps[idx : idx + n_timesteps]
-            return timestamps, data_list
+        data = {}
+        for var in self.variables_to_include:
+            data[var] = self.data[var][idx]
+        return data
 
     def get_timestamp(self, idx):
         """
