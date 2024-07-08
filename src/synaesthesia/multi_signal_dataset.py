@@ -22,22 +22,19 @@ class MultiSignalDataset(DatasetBase):
 
         self.single_signal_datasets = single_signal_datasets
         n_ssds = len(self.single_signal_datasets)
+        assert n_ssds > 0, "No datasets provided."
 
         self.timestamp_dict = {}
-        for ssd in self.single_signal_datasets:
-            for idx in range(len(ssd)):
-                self.timestamp_dict[ssd.get_timestamp(idx)] = [None] * n_ssds
-
         if aggregation == "all":
-            pass
+            for ssd in self.single_signal_datasets:
+                for idx in range(len(ssd)):
+                    self.timestamp_dict[ssd.get_timestamp(idx)] = [None] * n_ssds
 
         elif aggregation == "common":
-            print("Aggregating common timestamps")
-            for k in tqdm(list(self.timestamp_dict.keys())):
-                for ssd in self.single_signal_datasets:
-                    if k not in ssd:
-                        del self.timestamp_dict[k]
-                        break
+            common_timestamps = set(self.single_signal_datasets[0].timestamps)
+            for ssd in self.single_signal_datasets[1:]:
+                common_timestamps.intersection_update(set(ssd.timestamps))
+            self.timestamp_dict = {k: [None] * n_ssds for k in common_timestamps}
 
         elif aggregation[:2] == "I:":
             idx = int(aggregation[2:])
@@ -50,9 +47,10 @@ class MultiSignalDataset(DatasetBase):
 
         if fill == "none":
             print("Filling missing timestamps: none")
-            for k in tqdm(self.timestamp_dict):
-                for i, ssd in enumerate(self.single_signal_datasets):
-                    self.timestamp_dict[k][i] = ssd.get_timestamp_idx(k)
+            for i, ssd in enumerate(self.single_signal_datasets):
+                for j, timestamp in enumerate(ssd.timestamps):
+                    if timestamp in self.timestamp_dict:
+                        self.timestamp_dict[timestamp][i] = j
 
         elif fill == "last":
             timestamps = sorted(self.timestamp_dict.keys())
@@ -143,7 +141,11 @@ class MultiSignalDataset(DatasetBase):
         else:
             raise ValueError(f"Fill {fill} not valid.")
 
-        self.timestamps = sorted(self.timestamp_dict.keys())
+        self._timestamps = sorted(self.timestamp_dict.keys())
+
+    @property
+    def timestamps(self):
+        return self._timestamps
 
     def __getitem__(self, idx):
         return {
@@ -185,7 +187,7 @@ class MultiSignalDataset(DatasetBase):
         return "multi"
 
     def __repr__(self) -> str:
-        print_string = f"MultiSignalDataset - len() samples\n"
+        print_string = f"MultiSignalDataset - {len(self)} samples\n"
         print_string += f"Datasets: {len(self.single_signal_datasets)}\n"
 
         for i, d in enumerate(self.single_signal_datasets):
