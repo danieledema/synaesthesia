@@ -9,7 +9,8 @@ class DatasetBase(Dataset):
             "idx": idx,
             "timestamp": self.get_timestamp(idx),
         }
-        data_sample |= (self.get_data(idx),)
+        data_sample |= self.get_data(idx)
+        return data_sample
 
     def __len__(self):
         raise NotImplementedError
