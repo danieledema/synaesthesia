@@ -1,13 +1,7 @@
-from datetime import datetime, timedelta
-
-from tqdm import tqdm
+from datetime import timedelta
 
 from .abstract_dataset import DatasetBase
-
-
-def convert_to_datetime(timestamp):
-    # Adjust this function based on the format of your timestamps
-    return datetime.strptime(timestamp, "%Y%m%dT%H%M%S%f")
+from .utils import convert_to_datetime
 
 
 class MultiSignalDataset(DatasetBase):

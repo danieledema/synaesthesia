@@ -6,6 +6,7 @@ from astropy.io import fits
 from tqdm import tqdm
 
 from .abstract_dataset import DatasetBase
+from .utils import convert_to_datetime
 
 
 class EuvDataset(DatasetBase):
@@ -96,10 +97,9 @@ class EuvDataset(DatasetBase):
         Returns:
             str: Closest matching timestamp.
         """
-        format = "%Y%m%dT%H%M%S%f"
-        timestamp = datetime.strptime(timestamp, format)
+        timestamp = convert_to_datetime(timestamp)
         for t in timestamps:
-            t_tmp = datetime.strptime(t, format)
+            t_tmp = convert_to_datetime(t)
             if abs(t_tmp - timestamp).total_seconds() <= self.time_threshold:
                 return t
         return None
