@@ -104,16 +104,6 @@ class EuvDataset(DatasetBase):
                 return t
         return None
 
-    @property
-    def sensor_id(self):
-        """
-        Property returning the sensor ID.
-
-        Returns:
-            str: Sensor ID.
-        """
-        return "EUV"
-
     def __len__(self):
         """
         Returns the number of common timestamps available in the dataset.
@@ -139,7 +129,7 @@ class EuvDataset(DatasetBase):
             file_idx = self.data_dict[timestamp][wavelength]
             file_path = self.files[wavelength][file_idx]
             with fits.open(file_path) as hdul:
-                data[wavelength] = hdul[1].data
+                data[f"EUV-{wavelength}"] = hdul[1].data
         return data
 
     @staticmethod
@@ -184,3 +174,7 @@ class EuvDataset(DatasetBase):
             return self.timestamps.index(timestamp)
         except ValueError:
             raise ValueError("Timestamp not found in dataset")
+
+    @property
+    def sensor_ids(self) -> list[str]:
+        return [f"EUV-{w}" for w in self.wavelengths]

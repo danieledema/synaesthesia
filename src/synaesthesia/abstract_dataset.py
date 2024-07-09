@@ -9,7 +9,12 @@ class DatasetBase(Dataset):
             "idx": idx,
             "timestamp": self.get_timestamp(idx),
         }
-        data_sample |= self.get_data(idx)
+
+        data = self.get_data(idx)
+        for key in data:
+            assert key not in data_sample, f"Duplicate key {key} in data_sample"
+
+        data_sample |= data
         return data_sample
 
     def __len__(self):
@@ -32,7 +37,7 @@ class DatasetBase(Dataset):
             return False
 
     @property
-    def sensor_id(self):
+    def sensor_ids(self) -> list[str]:
         raise NotImplementedError
 
     @property

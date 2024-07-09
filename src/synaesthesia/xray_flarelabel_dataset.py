@@ -35,5 +35,5 @@ class GoesXRayFlarelabelDataset(XRayDataset):
         return "GOES"
 
     @property
-    def sensor_id(self):
-        return "flarelabel"
+    def sensor_ids(self):
+        return ["flarelabel"]

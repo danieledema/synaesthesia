@@ -99,14 +99,14 @@ class XRayDataset(DatasetBase):
         return self._timestamps
 
     @property
-    def sensor_id(self):
+    def sensor_ids(self):
         """
         Property returning the sensor ID.
 
         Returns:
             str: Sensor ID.
         """
-        return "XRSB"
+        return [f"XRSB-{var}" for var in self.variables_to_include]
 
     def __len__(self):
         return len(self.timestamps)
@@ -124,7 +124,7 @@ class XRayDataset(DatasetBase):
         """
         data = {}
         for var in self.variables_to_include:
-            data[var] = self.data[var][idx]
+            data[f"XRSB-{var}"] = self.data[var][idx]
         return data
 
     def get_timestamp(self, idx):
@@ -165,7 +165,3 @@ class XRayDataset(DatasetBase):
 
         # If no matching timestamp is found, raise an error
         raise ValueError(f"No timestamp found for date {date_str}")
-
-    @staticmethod
-    def get_timestamp_from_filename(filename):
-        raise NotImplementedError
