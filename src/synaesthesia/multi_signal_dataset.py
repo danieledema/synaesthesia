@@ -140,13 +140,6 @@ class MultiSignalDataset(DatasetBase):
     def timestamps(self):
         return self._timestamps
 
-    def __getitem__(self, idx):
-        return {
-            "idx": idx,
-            "timestamp": self.get_timestamp(idx),
-            "data": self.get_data(idx),
-        }
-
     def __len__(self):
         return len(self.timestamps)
 
@@ -156,12 +149,19 @@ class MultiSignalDataset(DatasetBase):
         for dataset, i in zip(
             self.single_signal_datasets, self.timestamp_dict[timestamp]
         ):
-            return_dict[f"{dataset.satellite_name}_{dataset.sensor_id}"] = None
+            if i is None:
+                tmp_data = {
+                    f"{dataset.satellite_name}_{sensor_id}": None
+                    for sensor_id in dataset.sensor_ids
+                }
+            else:
+                data = dataset.get_data(i)
+                tmp_data = {f"{dataset.satellite_name}_{k}": v for k, v in data.items()}
 
-            if i is not None:
-                return_dict[f"{dataset.satellite_name}_{dataset.sensor_id}"] = (
-                    dataset.get_data(i)
-                )
+            for k in tmp_data:
+                assert k not in return_dict, f"Key {k} already exists."
+
+            return_dict |= tmp_data
 
         return return_dict
 
