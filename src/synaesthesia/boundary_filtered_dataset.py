@@ -1,4 +1,5 @@
 from .abstract_dataset import DatasetBase
+from .utils import convert_to_datetime
 
 
 class BoundaryFilteredDataset(DatasetBase):
@@ -13,7 +14,10 @@ class BoundaryFilteredDataset(DatasetBase):
 
         indices = []
         for b in self.boundaries:
-            func_in_b = lambda x: b[0] < x < b[1]
+            b0 = convert_to_datetime(b[0])
+            b1 = convert_to_datetime(b[1])
+
+            func_in_b = lambda x: b0 < convert_to_datetime(x) < b1
 
             idxs = [
                 i for i in range(len(dataset)) if func_in_b(dataset.get_timestamp(i))
@@ -24,6 +28,10 @@ class BoundaryFilteredDataset(DatasetBase):
         self.bwd_indices = {idx: i for i, idx in enumerate(indices)}
 
         self.dataset = dataset
+
+    @property
+    def id(self):
+        return ""
 
     def __len__(self):
         return len(self.fwd_indices)

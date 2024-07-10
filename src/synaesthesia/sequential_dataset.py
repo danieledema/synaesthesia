@@ -4,7 +4,7 @@ from typing import Any
 from .abstract_dataset import DatasetBase
 
 
-class SequentialSensorDataset(DatasetBase):
+class SequentialDataset(DatasetBase):
     def __init__(
         self,
         dataset: DatasetBase,

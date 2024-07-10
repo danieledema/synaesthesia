@@ -15,7 +15,7 @@ class FISMDataset(DatasetBase):
     def __init__(
         self,
         folder_path: str | Path,
-        wavelength_range: tuple[float, float],
+        wavelength_range: tuple[float, float] = (0, 200),
     ):
         """
         Initializes the FISM dataset.
@@ -125,7 +125,7 @@ class FISMDataset(DatasetBase):
         return irradiance_data
 
     @property
-    def id(self) -> str:
+    def id(self):
         return "FISM"
 
     @property
