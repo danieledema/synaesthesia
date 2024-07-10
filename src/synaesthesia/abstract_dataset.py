@@ -14,6 +14,9 @@ class DatasetBase(Dataset):
         for key in data:
             assert key not in data_sample, f"Duplicate key {key} in data_sample"
 
+        if self.id:
+            data = {f"{self.id}-{key}": data[key] for key in data}
+
         data_sample |= data
         return data_sample
 
@@ -41,6 +44,10 @@ class DatasetBase(Dataset):
         raise NotImplementedError
 
     @property
+    def id(self):
+        raise NotImplementedError
+
+    @property
     def satellite_name(self):
         raise NotImplementedError
 
@@ -49,4 +56,6 @@ class DatasetBase(Dataset):
         raise NotImplementedError
 
     def __repr__(self) -> str:
-        return f"{self.satellite_name} - {self.sensor_id}: {len(self)} samples"
+        return (
+            f"{self.satellite_name} - {' '.join(self.sensor_ids)}: {len(self)} samples"
+        )
