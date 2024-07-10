@@ -17,30 +17,33 @@ class SequentialSensorDataset(DatasetBase):
         self.skip_n = skip_n
         self.stride = stride
 
-        self.idx_format = (
-            (i - self.n_samples) * self.skip_n for i in range(self.n_samples)
+        self.idx_format = tuple(
+            [0] + [i * (1 + self.skip_n) for i in range(1, n_samples)]
         )
 
     @property
     def idxs(self) -> list[int]:
-        return [i for i in range(len(self.dataset)) if i % self.stride == 0]
+        return [
+            i + self.idx_format[-1]
+            for i in range(len(self.dataset))
+            if i % self.stride == 0
+        ]
 
     def __len__(self) -> int:
-        len_samples = (1 + self.skip_n) * self.n_samples + 1
-        len_dataset = len(self.dataset) - len_samples
-        return len_dataset // self.stride
+        len_samples = self.idx_format[-1] + 1
+        return (len(self.dataset) - len_samples) // self.stride + 1
 
     @property
     def timestamps(self) -> list[int]:
         return [self.dataset.get_timestamp(i) for i in self.idxs]
 
     def get_data(self, idx) -> dict[str, Any]:
-        idx_skips = [self.skip_n for _ in range(self.n_samples - 1)]
+        if idx >= len(self):
+            raise IndexError(
+                f"Index {idx} out of range for dataset of length {len(self)}"
+            )
 
-        idxs = [0] + [
-            i + j * self.skip_n for i, j in zip(idx_skips, range(self.n_samples - 1))
-        ]
-        idxs = [i + idx for i in idxs]
+        idxs = [idx * self.stride + f for f in self.idx_format]
 
         data_list = [self.dataset.get_data(i) for i in idxs]
         data = {d: [] for d in data_list[0]}
@@ -51,8 +54,12 @@ class SequentialSensorDataset(DatasetBase):
         return data
 
     @property
-    def sensor_id(self):
-        return self.dataset.sensor_id
+    def sensor_ids(self):
+        return self.dataset.sensor_ids
+
+    @property
+    def id(self):
+        return self.dataset.id
 
     @property
     def satellite_name(self):
@@ -65,9 +72,7 @@ class SequentialSensorDataset(DatasetBase):
         return f"Sequential - {self.n_samples} samples\n{inner_repr}"
 
     def get_timestamp(self, idx):
-        return self.dataset.get_timestamp(
-            idx * self.stride + self.n_samples * (self.skip_n + 1) - 1
-        )
+        return self.dataset.get_timestamp(idx * self.stride + self.idx_format[-1])
 
     def get_timestamp_idx(self, timestamp):
         return self.timestamps.index(timestamp)
