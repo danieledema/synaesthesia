@@ -13,9 +13,9 @@ class CustomConcatDataset(DatasetBase):
 
         self.datasets = datasets
 
-        self.ssd_sensor_ids = self.datasets[0].single_signal_dataset_ids
+        ssd_sensor_ids = self.datasets[0].sensor_ids
         for ssd in self.datasets[1:]:
-            assert self.ssd_sensor_ids == ssd.single_signal_dataset_ids
+            assert set(ssd_sensor_ids) == set(ssd.sensor_ids)
 
     def find_right_datset(self, idx):
         if idx >= len(self):
@@ -30,11 +30,6 @@ class CustomConcatDataset(DatasetBase):
             idx -= len(d)
 
         return -1, -1  # It will never reach here
-
-    def get_data_by_id(self, idx, id):
-        assert id in self.ssd_sensor_ids
-        i, idx2 = self.find_right_datset(idx)
-        return self.datasets[i].get_data_by_id(idx2, id)
 
     def get_data(self, idx):
         i, idx2 = self.find_right_datset(idx)
@@ -71,3 +66,12 @@ class CustomConcatDataset(DatasetBase):
             print_string += inner_repr
             print_string += "------------------\n"
         return print_string
+
+    @property
+    def satellite_name(self):
+        print("[WARNING] ConcatDataset does not have a satellite name")
+        return self.datasets[0].satellite_name
+
+    @property
+    def sensor_ids(self) -> list[str]:
+        return self.datasets[0].sensor_ids

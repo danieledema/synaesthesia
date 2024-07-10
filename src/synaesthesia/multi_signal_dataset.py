@@ -155,7 +155,10 @@ class MultiSignalDataset(DatasetBase):
                     for sensor_id in dataset.sensor_ids
                 }
             else:
-                data = dataset.get_data(i)
+                data = dataset[i]
+                del data["timestamp"]
+                del data["idx"]
+
                 tmp_data = {f"{dataset.satellite_name}_{k}": v for k, v in data.items()}
 
             for k in tmp_data:
@@ -174,6 +177,10 @@ class MultiSignalDataset(DatasetBase):
     @property
     def sensor_id(self):
         return "multi"
+
+    @property
+    def id(self):
+        return ""
 
     @property
     def satellite_id(self):

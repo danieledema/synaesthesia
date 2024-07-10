@@ -124,7 +124,7 @@ class XRayDataset(DatasetBase):
         """
         data = {}
         for var in self.variables_to_include:
-            data[f"XRSB-{var}"] = self.data[var][idx]
+            data[f"{var}"] = self.data[var][idx]
         return data
 
     def get_timestamp(self, idx):
@@ -165,3 +165,7 @@ class XRayDataset(DatasetBase):
 
         # If no matching timestamp is found, raise an error
         raise ValueError(f"No timestamp found for date {date_str}")
+
+    @property
+    def id(self):
+        return "XRAY"

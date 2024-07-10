@@ -129,7 +129,7 @@ class EuvDataset(DatasetBase):
             file_idx = self.data_dict[timestamp][wavelength]
             file_path = self.files[wavelength][file_idx]
             with fits.open(file_path) as hdul:
-                data[f"EUV-{wavelength}"] = hdul[1].data
+                data[f"{wavelength}"] = hdul[1].data
         return data
 
     @staticmethod
@@ -176,5 +176,9 @@ class EuvDataset(DatasetBase):
             raise ValueError("Timestamp not found in dataset")
 
     @property
+    def id(self) -> str:
+        return "EUV"
+
+    @property
     def sensor_ids(self) -> list[str]:
-        return [f"EUV-{w}" for w in self.wavelengths]
+        return [f"{self.id}-{w}" for w in self.wavelengths]
