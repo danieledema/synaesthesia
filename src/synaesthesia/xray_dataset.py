@@ -1,15 +1,13 @@
+from datetime import datetime
 from pathlib import Path
 
 import cftime
 import netCDF4 as nc
 import numpy as np
+import pandas as pd
 from ncflag import FlagWrap
 
 from .abstract_dataset import DatasetBase
-
-import pandas as pd
-
-from datetime import datetime
 
 
 class XRayDataset(DatasetBase):
@@ -67,28 +65,27 @@ class XRayDataset(DatasetBase):
         data = {var: [] for var in self.variables_to_include}
 
         for file in self.files:
-            with nc.Dataset(file) as nc_in:
-                times = cftime.num2pydate(
-                    nc_in.variables["time"][:], nc_in.variables["time"].units
-                )
+            nc_in = nc.Dataset(file)
+            times = cftime.num2pydate(
+                nc_in.variables["time"][:], nc_in.variables["time"].units
+            )
 
-                for var in self.variables_to_include:
-                    if var in nc_in.variables:
-                        var_data = np.ma.filled(
-                            nc_in.variables[var][:], fill_value=np.nan
+            for var in self.variables_to_include:
+                if var in nc_in.variables:
+                    var_data = np.ma.filled(nc_in.variables[var][:], fill_value=np.nan)
+                    if datatype == "avg1m":
+                        xrsb_flags = FlagWrap.init_from_netcdf(
+                            nc_in.variables["xrsb_flag"]
                         )
-                        if datatype == "avg1m":
-                            xrsb_flags = FlagWrap.init_from_netcdf(
-                                nc_in.variables["xrsb_flag"]
-                            )
-                            # set any points that are NOT good_data to nan
-                            good_data = xrsb_flags.get_flag("good_data")
-                            var_data[~good_data] = np.nan
-                        data[var].extend(var_data)
-                    else:
-                        raise ValueError(f"Variable '{var}' not found in file {file}")
+                        # set any points that are NOT good_data to nan
+                        good_data = xrsb_flags.get_flag("good_data")
+                        var_data[~good_data] = np.nan
+                    data[var].extend(var_data)
+                else:
+                    raise ValueError(f"Variable '{var}' not found in file {file}")
 
-                all_times.extend(times)
+            all_times.extend(times)
+            nc_in.close()
 
         # Convert times to datetime objects
         self._timestamps = np.array(all_times)
@@ -241,29 +238,28 @@ class XRayDataset_no_pandas(DatasetBase):
         data = {var: [] for var in self.variables_to_include}
 
         for file in self.files:
-            with nc.Dataset(file) as nc_in:
-                times = cftime.num2pydate(
-                    nc_in.variables["time"][:], nc_in.variables["time"].units
-                )
+            nc_in = nc.Dataset(file)
+            times = cftime.num2pydate(
+                nc_in.variables["time"][:], nc_in.variables["time"].units
+            )
 
-                for var in self.variables_to_include:
-                    if var in nc_in.variables:
-                        var_data = np.ma.filled(
-                            nc_in.variables[var][:], fill_value=np.nan
+            for var in self.variables_to_include:
+                if var in nc_in.variables:
+                    var_data = np.ma.filled(nc_in.variables[var][:], fill_value=np.nan)
+                    if datatype == "avg1m":
+                        xrsb_flags = FlagWrap.init_from_netcdf(
+                            nc_in.variables["xrsb_flag"]
                         )
-                        if datatype == "avg1m":
-                            xrsb_flags = FlagWrap.init_from_netcdf(
-                                nc_in.variables["xrsb_flag"]
-                            )
-                            # set any points that are NOT good_data to nan
-                            good_data = xrsb_flags.get_flag("good_data")
-                            var_data[~good_data] = np.nan
-                        data[var].extend(var_data)
+                        # set any points that are NOT good_data to nan
+                        good_data = xrsb_flags.get_flag("good_data")
+                        var_data[~good_data] = np.nan
+                    data[var].extend(var_data)
 
-                    else:
-                        raise ValueError(f"Variable '{var}' not found in file {file}")
+                else:
+                    raise ValueError(f"Variable '{var}' not found in file {file}")
 
-                all_times.extend(times)
+            all_times.extend(times)
+            nc_in.close()
 
         # Convert times to the desired format 'YYYYMMDDTHHMMSSfff'
         self._timestamps = np.array(
