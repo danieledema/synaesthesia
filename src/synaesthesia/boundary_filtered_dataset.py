@@ -50,4 +50,4 @@ class BoundaryFilteredDataset(DatasetBase):
         return self.dataset.sensor_id
 
     def __repr__(self):
-        return f"BoundaryFilteredDataset({self.dataset}, {self.boundaries})"
+        return f"BoundaryFilteredDataset({self.dataset}, {self.boundaries})\nTotal samples: {len(self)}\n"
