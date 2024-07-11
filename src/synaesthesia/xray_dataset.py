@@ -92,7 +92,24 @@ class XRayDataset(DatasetBase):
 
         # Convert times to datetime objects
         self._timestamps = np.array(all_times)
-        self.data = {var: np.array(data[var]) for var in self.variables_to_include}
+        self.data = {var: np.array(data) for var, data in data.items()}
+        # Apply the filter to the data
+        self._filter_data()
+
+    def _filter_data(self):
+        """
+        Filter the dataset according to specified conditions.
+        """
+        # Convert data to a DataFrame for easier filtering
+        df = pd.DataFrame(self.data)
+        df["timestamps"] = self._timestamps
+
+        # Apply the filter conditions
+        filtered_df = df[(df["xrsb_flux"] < 1e-7) | (df["status"] == "EVENT_PEAK")]
+
+        # Update the dataset with filtered data
+        self._timestamps = filtered_df["timestamps"].values
+        self.data = {var: filtered_df[var].values for var in self.variables_to_include}
 
     @property
     def timestamps(self):

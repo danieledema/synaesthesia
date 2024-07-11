@@ -80,6 +80,10 @@ class MultiSignalDataset(DatasetBase):
             common_timestamps = set.intersection(
                 *[set(ds.timestamps) for ds in self.single_signal_datasets]
             )
+            common_timestamps = sorted(
+                common_timestamps
+            )  # Convert set to a sorted list
+
             timestamp_df = pd.DataFrame(
                 index=common_timestamps,
                 columns=[

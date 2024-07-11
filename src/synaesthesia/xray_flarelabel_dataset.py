@@ -4,7 +4,7 @@ from .xray_dataset import XRayDataset
 
 
 class GoesXRayFlarelabelDataset(XRayDataset):
-    variables_to_include = ["flare_class"]
+    variables_to_include = ["flare_class", "status", "xrsb_flux"]
     datatype = "flsum"
     severities = ["NO_FLARE", "C", "M", "X"]
 
