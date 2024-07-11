@@ -120,12 +120,12 @@ class MultiSignalDataset(DatasetBase):
         if self.fill == "none":
             # No filling required
             print("Fill method: none")
-            self.timestamp_df = self.timestamp_df.sort_values()
+            # self.timestamp_df = self.timestamp_df.sort_values()
 
         elif self.fill == "last":
             # Fill missing timestamps with data from the last available timestamp
             print("Fill method: last")
-            self.timestamp_df = self.timestamp_df.sort_values()
+            # self.timestamp_df = self.timestamp_df.sort_values()
             self.timestamp_df = self.timestamp_df.fillna(method="ffill")
 
         elif self.fill == "closest":
@@ -133,7 +133,7 @@ class MultiSignalDataset(DatasetBase):
             print("Fill method: closest")
             for i in range(len(self.timestamp_df.columns)):
                 # Sort timestamps to ensure the interpolate('nearest') works correctly
-                timestamp_series = self.timestamp_df.index.sort_values()
+                timestamp_series = self.timestamp_df.index
                 limit = int(
                     self.time_cut / (timestamp_series[1] - timestamp_series[0]).seconds
                 )  # Convert time_cut from minutes to seconds.
