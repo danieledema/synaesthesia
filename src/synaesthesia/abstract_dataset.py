@@ -5,10 +5,7 @@ from torch.utils.data import Dataset
 
 class DatasetBase(Dataset):
     def __getitem__(self, idx):
-        data_sample = {
-            "idx": idx,
-            "timestamp": self.get_timestamp(idx),
-        }
+        data_sample = {"idx": idx, "timestamp": str(self.get_timestamp(idx))}
 
         data = self.get_data(idx)
         for key in data:

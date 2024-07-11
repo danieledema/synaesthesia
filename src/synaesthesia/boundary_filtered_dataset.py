@@ -17,7 +17,7 @@ class BoundaryFilteredDataset(DatasetBase):
             b0 = convert_to_datetime(b[0])
             b1 = convert_to_datetime(b[1])
 
-            func_in_b = lambda x: b0 < convert_to_datetime(x) < b1
+            func_in_b = lambda x: b0 < x < b1
 
             idxs = [
                 i for i in range(len(dataset)) if func_in_b(dataset.get_timestamp(i))
