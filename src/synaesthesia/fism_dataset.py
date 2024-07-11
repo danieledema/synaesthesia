@@ -75,7 +75,8 @@ class FISMDataset(DatasetBase):
 
     @property
     def timestamps(self) -> List[datetime]:
-        return self.timestamp_df.index.tolist()
+        timestamp = self.timestamp_df.index.tolist()
+        return timestamp
 
     def __len__(self):
         return len(self.timestamps)
