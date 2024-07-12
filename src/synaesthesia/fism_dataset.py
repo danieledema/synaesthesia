@@ -1,12 +1,26 @@
 from datetime import datetime, timedelta
 from pathlib import Path
-from threading import RLock
+from threading import Lock
 from typing import Dict, List, OrderedDict, Tuple, Union
 
 import netCDF4 as nc
 
 from .abstract_dataset import DatasetBase
 from .utils import convert_to_datetime
+
+
+class PicklableLock:
+    def __init__(self):
+        self._lock = Lock()
+
+    def acquire(self):
+        self._lock.acquire()
+
+    def release(self):
+        self._lock.release()
+
+    def __reduce__(self):
+        return (self.__class__, ())
 
 
 class FISMDataset(DatasetBase):
@@ -47,8 +61,7 @@ class FISMDataset(DatasetBase):
         self.available_wavelengths = self.get_available_wavelengths(self.files[0])
 
         self.file_connections = []
-        self.lock = RLock()
-        self.open_connection()
+        self.lock = PicklableLock()
 
     def open_connection(self):
         self.lock.acquire()
