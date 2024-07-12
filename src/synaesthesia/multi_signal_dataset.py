@@ -1,12 +1,11 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import List
-
-from .abstract_dataset import DatasetBase
-from .utils import convert_to_datetime
 
 import pandas as pd
 from tqdm import tqdm
-from datetime import datetime
+
+from .abstract_dataset import DatasetBase
+from .utils import convert_to_datetime
 
 
 def convert_to_datetime(timestamp):
@@ -183,7 +182,7 @@ class MultiSignalDataset(DatasetBase):
         timestamp = self.timestamps[idx]
         data_dict = {}
         for i, ds in enumerate(self.single_signal_datasets):
-            data_dict[f"dataset_{i}"] = ds.get_data(ds.get_timestamp_idx(timestamp))
+            data_dict[f"{ds.id}"] = ds.get_data(ds.get_timestamp_idx(timestamp))
 
         return data_dict
 
