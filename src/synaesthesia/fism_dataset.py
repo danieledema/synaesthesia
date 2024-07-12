@@ -52,7 +52,7 @@ class FISMDataset(DatasetBase):
 
     def open_connection(self):
         self.lock.acquire()
-        if self.file_connections:
+        if not self.file_connections:
             self.file_connections = [nc.Dataset(file, mode="r") for file in self.files]
         self.lock.release()
 
