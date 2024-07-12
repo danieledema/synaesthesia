@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from pathlib import Path
-from threading import Lock
+from threading import RLock
 from typing import Dict, List, OrderedDict, Tuple, Union
 
 import netCDF4 as nc
@@ -47,7 +47,7 @@ class FISMDataset(DatasetBase):
         self.available_wavelengths = self.get_available_wavelengths(self.files[0])
 
         self.file_connections = []
-        self.lock = Lock()
+        self.lock = RLock()
         self.open_connection()
 
     def open_connection(self):
