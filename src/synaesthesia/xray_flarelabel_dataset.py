@@ -13,10 +13,16 @@ class GoesXRayFlarelabelDataset(XRayDataset):
         folder_path: str | Path,
         goesnr: str = "16",
         level: int = 2,
+        filtered: bool = True,
     ):
 
         super().__init__(
-            folder_path, self.datatype, goesnr, level, self.variables_to_include
+            folder_path,
+            self.datatype,
+            goesnr,
+            level,
+            self.variables_to_include,
+            filtered,
         )
 
     def get_data(self, idx):

@@ -6,6 +6,17 @@ from .utils import convert_to_datetime
 
 import pandas as pd
 from tqdm import tqdm
+from datetime import datetime
+
+
+def convert_to_datetime(timestamp):
+    # Adjust this function based on the format of your timestamps
+    try:
+        return datetime.strptime(timestamp, "%Y%m%dT%H%M")
+    except ValueError:
+        return datetime.strptime(timestamp, "%Y%m%dT%H%M%S%f")
+
+
 import numpy as np
 
 
