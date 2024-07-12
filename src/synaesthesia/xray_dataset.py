@@ -22,6 +22,7 @@ class XRayDataset(DatasetBase):
         goesnr: str = "16",
         level: int = 2,
         variables_to_include: list[str] | None = None,
+        filtered: bool = False,
     ):
         """
         Initializes the X-ray dataset.
@@ -91,12 +92,14 @@ class XRayDataset(DatasetBase):
         self._timestamps = np.array(all_times)
         self.data = {var: np.array(data) for var, data in data.items()}
         # Apply the filter to the data
-        self._filter_data()
+        if filtered == True:
+            self._filter_data()
 
     def _filter_data(self):
         """
         Filter the dataset according to specified conditions.
         """
+        print("Filtering data for problematic X-ray flux values...")
         # Convert data to a DataFrame for easier filtering
         df = pd.DataFrame(self.data)
         df["timestamps"] = self._timestamps
