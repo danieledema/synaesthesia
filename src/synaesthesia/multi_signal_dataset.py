@@ -17,6 +17,7 @@ def convert_to_datetime(timestamp):
 
 
 import numpy as np
+from tqdm import tqdm
 
 
 class MultiSignalDataset(DatasetBase):
@@ -241,12 +242,12 @@ class MultiSignalDataset_no_pandas(DatasetBase):
             common_timestamps = set(self.single_signal_datasets[0].timestamps)
             for ssd in self.single_signal_datasets[1:]:
                 common_timestamps.intersection_update(set(ssd.timestamps))
-            self.timestamp_dict = {k: [None] * n_ssds for k in common_timestamps}
+            self.timestamp_dict = {k: [None] * n_ssds for k in tqdm(common_timestamps)}
 
         elif aggregation[:2] == "I:":
             idx = int(aggregation[2:])
             i_timestamps = set(self.single_signal_datasets[idx].timestamps)
-            self.timestamp_dict = {k: [None] * n_ssds for k in i_timestamps}
+            self.timestamp_dict = {k: [None] * n_ssds for k in tqdm(i_timestamps)}
 
         else:
             raise ValueError(f"Aggregation {aggregation} not valid.")
@@ -254,7 +255,7 @@ class MultiSignalDataset_no_pandas(DatasetBase):
         if fill == "none":
             print("Filling missing timestamps: none")
             for i, ssd in enumerate(self.single_signal_datasets):
-                for j, timestamp in enumerate(ssd.timestamps):
+                for j, timestamp in enumerate(tqdm(ssd.timestamps)):
                     if timestamp in self.timestamp_dict:
                         self.timestamp_dict[timestamp][i] = j
 
