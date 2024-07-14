@@ -31,6 +31,7 @@ class MultiSignalDataset(DatasetBase):
         aggregation: str = "all",
         fill: str = "none",
         time_cut: int = 60,  # in minutes
+        patch: str = "drop",
     ):
         """
         Initializes the MultiSignalDataset.
@@ -47,6 +48,7 @@ class MultiSignalDataset(DatasetBase):
         self.aggregation = aggregation
         self.fill = fill
         self.time_cut = time_cut
+        self.patch = patch
 
         print("Initializing MultiSignalDataset...")
 
@@ -154,8 +156,15 @@ class MultiSignalDataset(DatasetBase):
                     .interpolate(method="nearest", limit=limit, limit_direction="both")
                 )
                 self.timestamp_df.iloc[:, i] = interpolated_column
-                # Remove timestamps that couldn't be filled (still None after interpolation)
-                self.timestamp_df = self.timestamp_df.dropna()
+
+                if self.patch == "drop":
+                    print("Dropping timestamps that couldn't be filled...")
+                    # Remove timestamps that couldn't be filled (still None after interpolation)
+                    self.timestamp_df = self.timestamp_df.dropna()
+                elif self.patch == "zero":
+                    print("Filling remaining NaNs with zeros...")
+                    # Fill remaining NaNs with zeros
+                    self.timestamp_df = self.timestamp_df.fillna(0)
 
     @property
     def timestamps(self) -> List[pd.Timestamp]:

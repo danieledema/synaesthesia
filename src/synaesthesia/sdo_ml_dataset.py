@@ -84,13 +84,20 @@ class SDOMLDataset(Dataset):
             self.aligndata.index.month.isin(self.months), :
         ]
 
-        # if data filter, apply
-        if min_date and max_date:
-            if min_date < pd.to_datetime(
-                "2010-09-09 00:00:11.08"
-            ) or max_date > pd.to_datetime("2023-05-26 06:36:08.072"):
-                raise ValueError("SDOML date range is not available. ")
+        # Determine the available date range
+        data_start_date = self.aligndata.index.min()
+        data_end_date = self.aligndata.index.max()
 
+        # Validate and adjust date range if needed
+        if min_date and max_date:
+            if min_date < data_start_date or max_date > data_end_date:
+                print(
+                    f"Warning: Specified date range ({min_date} to {max_date}) is outside the available data range ({data_start_date} to {data_end_date}). Adjusting to available range."
+                )
+                min_date = max(min_date, data_start_date)
+                max_date = min(max_date, data_end_date)
+
+            print(f"Filtering data to date range: {min_date} to {max_date}")
             self.aligndata = self.aligndata[
                 (self.aligndata.index >= min_date) & (self.aligndata.index <= max_date)
             ]
