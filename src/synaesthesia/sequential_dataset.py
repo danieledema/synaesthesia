@@ -88,7 +88,7 @@ class SequentialDataset(DatasetBase):
         inner_repr = repr(self.dataset)
         lines = inner_repr.split("\n")
         inner_repr = "\n".join(["\t" + line for line in lines])
-        return f"Sequential - {self.n_samples} samples\n{inner_repr}"
+        return f"Sequential - {len(self.idxs)} samples\n{inner_repr}"
 
     def get_timestamp(self, idx):
         return self.timestamps[idx]

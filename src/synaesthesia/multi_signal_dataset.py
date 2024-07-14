@@ -161,17 +161,13 @@ class MultiSignalDataset(DatasetBase):
                     print("Dropping timestamps that couldn't be filled...")
                     # Remove timestamps that couldn't be filled (still None after interpolation)
                     self.timestamp_df = self.timestamp_df.dropna()
-                elif self.patch == "zero":
-                    print("Filling remaining NaNs with zeros...")
-                    # Fill remaining NaNs with zeros
-                    self.timestamp_df = self.timestamp_df.fillna(0)
 
     @property
-    def timestamps(self) -> List[pd.Timestamp]:
+    def timestamps(self) -> List[np.datetime64]:
         """
-        Returns the list of timestamps.
+        Returns the list of timestamps in numpy.datetime64 format.
         """
-        return self.timestamp_df.index.tolist()
+        return [np.datetime64(ts, "ns") for ts in self.timestamp_df.index]
 
     def __len__(self) -> int:
         """
@@ -190,6 +186,7 @@ class MultiSignalDataset(DatasetBase):
             dict: Dictionary containing data from all datasets at the specified timestamp.
         """
         timestamp = self.timestamps[idx]
+        print(timestamp)
         data_dict = {}
         for i, ds in enumerate(self.single_signal_datasets):
             data_dict[f"{ds.id}"] = ds.get_data(ds.get_timestamp_idx(timestamp))
@@ -225,3 +222,10 @@ class MultiSignalDataset(DatasetBase):
         Returns a string representation of the MultiSignalDataset object.
         """
         return f"MultiSignalDataset - {len(self)} samples\nDatasets: {len(self.single_signal_datasets)}"
+
+    @property
+    def id(self):
+        """
+        Returns the ID of the dataset.
+        """
+        return "MultiSignalDataset"

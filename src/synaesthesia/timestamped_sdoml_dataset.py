@@ -17,7 +17,7 @@ class TimestampedSDOMLDataset(SDOMLDataset):
         items = self.aligndata.iloc[idx]
         # print(items.index, idx, pd.DataFrame([items]))
         timestamps = [
-            i.strftime("%Y-%m-%d %H:%M:%S") for i in pd.DataFrame([items]).index
+            i.strftime("%Y-%m-%d %H:%M:%S%f") for i in pd.DataFrame([items]).index
         ]
 
         r = {"timestamps": timestamps}
@@ -43,3 +43,14 @@ class TimestampedSDOMLDataset(SDOMLDataset):
     @property
     def sensor_ids(self):
         return ["AIA", "HMI", "EVE"]
+
+    def get_timestamp(self, idx):
+        return self.timestamps[idx]
+
+    def get_data(self, idx):
+        data = self.__getitem__(idx)
+        return data
+
+    @property
+    def id(self):
+        return "SDO-MLv2"
