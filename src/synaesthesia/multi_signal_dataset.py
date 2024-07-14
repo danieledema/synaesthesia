@@ -186,7 +186,6 @@ class MultiSignalDataset(DatasetBase):
             dict: Dictionary containing data from all datasets at the specified timestamp.
         """
         timestamp = self.timestamps[idx]
-        print(timestamp)
         data_dict = {}
         for i, ds in enumerate(self.single_signal_datasets):
             data_dict[f"{ds.id}"] = ds.get_data(ds.get_timestamp_idx(timestamp))
