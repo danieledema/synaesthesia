@@ -13,6 +13,7 @@ class SequentialDataset(DatasetBase):
         stride=1,
         direction="future",
         delay_start=0,
+        return_timestamps=False,
     ):
         self.dataset = dataset
         self.n_samples = n_samples
@@ -20,6 +21,7 @@ class SequentialDataset(DatasetBase):
         self.stride = stride
         self.direction = direction
         self.delay_start = delay_start
+        self.return_timestamps = return_timestamps
 
         idx_format = [
             self.delay_start + i * (1 + self.skip_n) for i in range(n_samples)
@@ -61,14 +63,17 @@ class SequentialDataset(DatasetBase):
 
         original_idx = self.idxs[idx]
         seq_idxs = [original_idx + f for f in self.idx_format]
-        seq_timestamps = [self.dataset.get_timestamp(i) for i in seq_idxs]
+
         data_list = [self.dataset.get_data(i) for i in seq_idxs]
 
         data = {d: [] for d in data_list[0]}
         for d in data_list:
             for key in d:
                 data[key].append(d[key])
-        data["timestamps"] = seq_timestamps
+
+        if self.return_timestamps:
+            seq_timestamps = [self.dataset.get_timestamp(i) for i in seq_idxs]
+            data["timestamps"] = seq_timestamps
 
         return data
 

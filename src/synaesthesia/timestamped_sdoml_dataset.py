@@ -16,11 +16,11 @@ class TimestampedSDOMLDataset(SDOMLDataset):
         # sample num_frames between idx and idx - sampling_period
         items = self.aligndata.iloc[idx]
         # print(items.index, idx, pd.DataFrame([items]))
-        timestamps = [
-            i.strftime("%Y-%m-%d %H:%M:%S%f") for i in pd.DataFrame([items]).index
-        ]
+        # timestamps = [
+        #    i.strftime("%Y-%m-%d %H:%M:%S%f") for i in pd.DataFrame([items]).index
+        # ]
 
-        r = {"timestamps": timestamps}
+        r = {}  # {"timestamps": timestamps}
 
         if self.eve_data:
             image_stack, eve_data = super().__getitem__(idx)
