@@ -61,6 +61,8 @@ class SequentialDataset(DatasetBase):
                 f"Index {idx} out of range for dataset of length {len(self)}"
             )
 
+        breakpoint()
+
         original_idx = self.idxs[idx]
         seq_idxs = [original_idx + f for f in self.idx_format]
 

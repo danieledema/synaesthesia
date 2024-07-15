@@ -90,6 +90,7 @@ class MultiSignalDataset(DatasetBase):
 
             # For 'common' aggregation, mark timestamps common to all datasets
             print("Aggregating timestamps (method: common)...")
+
             common_timestamps = set.intersection(
                 *[set(ds.timestamps) for ds in self.single_signal_datasets]
             )
