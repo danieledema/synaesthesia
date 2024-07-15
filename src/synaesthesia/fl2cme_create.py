@@ -148,13 +148,27 @@ if __name__ == "__main__":
     df_flare_timestamp = pd.DataFrame(timestamps, columns=['timestamp'])
 
     # Create a column for storing class info
-    df_flare_timestamp["flare_class"]=np.nan
+    df_flare_timestamp["flare_class"]=np.nan 
 
+    
+ #   df_flare_timestamp[(df_filtered["start_time"]>min_time) & (df_filtered["end_time"]<max_time)]
+   # assuming start & end date the same
+    fl_year = list()
+    fl_month = list()
+    fl_day = list()
+    for i in range(len(df_filtered)):
+        fl_year.append(df_filtered["start_time"][i].year)
+        fl_month.append(df_filtered["start_time"][i].month)
+        fl_day.append(df_filtered["start_time"][i].day)
+
+    
 
     # Simplest version for classification
     # Use pandas to merge df_filtered with df_flare_timestamps
     # Find the closest date to peak_time and fill with the class name
     
+    
+
 
 
     # # Create a dictionary where each key is a GOES class and each value is a Series of NaNs (or 0s) with the same index as df_flare_timestamp
