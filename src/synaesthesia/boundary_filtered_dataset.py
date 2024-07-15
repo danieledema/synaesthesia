@@ -1,5 +1,6 @@
 from .abstract_dataset import DatasetBase
 from .utils import convert_to_datetime
+import pandas as pd
 
 
 class BoundaryFilteredDataset(DatasetBase):
@@ -20,7 +21,9 @@ class BoundaryFilteredDataset(DatasetBase):
             func_in_b = lambda x: b0 < x < b1
 
             idxs = [
-                i for i in range(len(dataset)) if func_in_b(dataset.get_timestamp(i))
+                i
+                for i in range(len(dataset))
+                if func_in_b(pd.to_datetime(dataset.get_timestamp(i)))
             ]
             indices += idxs
 
