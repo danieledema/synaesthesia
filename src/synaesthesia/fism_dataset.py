@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from threading import Lock
 from typing import Dict, List, OrderedDict, Tuple, Union
-
+import numpy as np
 import netCDF4 as nc
 
 from .abstract_dataset import DatasetBase
@@ -55,7 +55,15 @@ class FISMDataset(DatasetBase):
             for ts in timestamps:
                 ts = convert_to_datetime(ts)
                 self._timestamps[ts] = i
-        self.timestamps_list = list(self._timestamps.keys())
+        timestamps_list = list(self._timestamps.keys())
+
+        # Convert datetime objects to string format
+        datetime_strings = [
+            dt.strftime("%Y-%m-%dT%H:%M:%S.000000000") for dt in timestamps_list
+        ]
+
+        # Create numpy array with dtype 'datetime64[ns]'
+        self.datetime_array = np.array(datetime_strings, dtype="datetime64[ns]")
 
         # Retrieve available wavelengths from the first file
         self.available_wavelengths = self.get_available_wavelengths(self.files[0])
@@ -102,7 +110,7 @@ class FISMDataset(DatasetBase):
 
     @property
     def timestamps(self) -> List[datetime]:
-        return self.timestamps_list
+        return self.datetime_array  # self.timestamps_list
 
     def __len__(self):
         return len(self.timestamps)
