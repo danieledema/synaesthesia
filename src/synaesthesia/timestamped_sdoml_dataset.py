@@ -1,9 +1,9 @@
-from .sdo_ml_dataset import SDOMLDataset
+from .sdo_ml_dataset_prep import SDOMLDatasetPrep
 import pandas as pd
 import numpy as np
 
 
-class TimestampedSDOMLDataset(SDOMLDataset):
+class TimestampedSDOMLDataset(SDOMLDatasetPrep):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
