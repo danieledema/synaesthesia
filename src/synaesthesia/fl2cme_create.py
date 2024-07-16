@@ -37,9 +37,7 @@ if __name__ == "__main__":
     """
 
     path = "/home/data/flare_labels/fl2cme_vconf.csv"
-
     user = "hannah"
-
     if user == "hannah":
         df = pd.read_csv(path)
 
@@ -80,6 +78,22 @@ if __name__ == "__main__":
                 flarelabel_timeseries.loc[mask, "flareclass_category"] = 2
             elif flareclass_str.startswith("X"):
                 flarelabel_timeseries.loc[mask, "flareclass_category"] = 3
+
+        # Calculate percentage of each class category
+        total_rows = len(flarelabel_timeseries)
+        percentage_C = (
+            (flarelabel_timeseries["flareclass_category"] == 1).sum() / total_rows * 100
+        )
+        percentage_M = (
+            (flarelabel_timeseries["flareclass_category"] == 2).sum() / total_rows * 100
+        )
+        percentage_X = (
+            (flarelabel_timeseries["flareclass_category"] == 3).sum() / total_rows * 100
+        )
+
+        print(f"Percentage of C-class flares: {percentage_C:.2f}%")
+        print(f"Percentage of M-class flares: {percentage_M:.2f}%")
+        print(f"Percentage of X-class flares: {percentage_X:.2f}%")
 
         # Save the flarelabel_timeseries DataFrame to a CSV file
         flarelabel_timeseries.to_csv(
