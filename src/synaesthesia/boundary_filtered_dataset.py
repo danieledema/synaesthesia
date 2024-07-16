@@ -1,6 +1,13 @@
 from .abstract_dataset import DatasetBase
 from .utils import convert_to_datetime
 import pandas as pd
+import numpy as np
+
+from tqdm import tqdm
+
+
+def parse_custom_datetime(dt_str):
+    return f"{dt_str[:4]}-{dt_str[4:6]}-{dt_str[6:8]}T{dt_str[9:11]}:{dt_str[11:13]}:{dt_str[13:15]}"
 
 
 class BoundaryFilteredDataset(DatasetBase):
@@ -13,18 +20,25 @@ class BoundaryFilteredDataset(DatasetBase):
 
         self.boundaries = boundaries
 
+        print("Initializing BoundaryFilteredDataset.")
+        print(f"Boundaries: {self.boundaries}")
+
+        # Convert boundaries to numpy.datetime64 using the helper function
+        boundaries_dt = [
+            (
+                np.datetime64(parse_custom_datetime(b[0])),
+                np.datetime64(parse_custom_datetime(b[1])),
+            )
+            for b in self.boundaries
+        ]
+
+        # Use the dataset timestamps directly
+        timestamps = dataset.timestamps
+
         indices = []
-        for b in self.boundaries:
-            b0 = convert_to_datetime(b[0])
-            b1 = convert_to_datetime(b[1])
-
-            func_in_b = lambda x: b0 < x < b1
-
-            idxs = [
-                i
-                for i in range(len(dataset))
-                if func_in_b(pd.to_datetime(dataset.get_timestamp(i)))
-            ]
+        for b0, b1 in boundaries_dt:
+            # Find indices where timestamps are within the boundary
+            idxs = [i for i in tqdm(range(len(timestamps))) if b0 < timestamps[i] < b1]
             indices += idxs
 
         self.fwd_indices = {i: idx for i, idx in enumerate(indices)}
