@@ -61,15 +61,25 @@ if __name__ == "__main__":
         time_index = pd.date_range(start=min_time_adjusted, end=max_time, freq="12T")
 
         # Initialize the flarelabel_timeseries DataFrame
-        flarelabel_timeseries = pd.DataFrame(index=time_index, columns=["flareclass"])
+        flarelabel_timeseries = pd.DataFrame(
+            index=time_index, columns=["flareclass", "flareclass_category"]
+        )
         flarelabel_timeseries["flareclass"] = 0
+        flarelabel_timeseries["flareclass_category"] = 0
 
-        # Populate the flareclass column
+        # Populate the flareclass and flareclass_category columns
         for i, row in df.iterrows():
             mask = (flarelabel_timeseries.index >= row["start_time"]) & (
                 flarelabel_timeseries.index <= row["end_time"]
             )
             flarelabel_timeseries.loc[mask, "flareclass"] = row["goes_class"]
+            flareclass_str = str(row["goes_class"])
+            if flareclass_str.startswith("C"):
+                flarelabel_timeseries.loc[mask, "flareclass_category"] = 1
+            elif flareclass_str.startswith("M"):
+                flarelabel_timeseries.loc[mask, "flareclass_category"] = 2
+            elif flareclass_str.startswith("X"):
+                flarelabel_timeseries.loc[mask, "flareclass_category"] = 3
 
         # Save the flarelabel_timeseries DataFrame to a CSV file
         flarelabel_timeseries.to_csv(
