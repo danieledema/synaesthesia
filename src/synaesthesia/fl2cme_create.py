@@ -39,6 +39,7 @@ if __name__ == "__main__":
     path = "/home/data/flare_labels/fl2cme_vconf.csv"
 
     user = "hannah"
+    user = "d"
 
     if user == "hannah":
         df = pd.read_csv(path)
@@ -50,6 +51,9 @@ if __name__ == "__main__":
         min_time = df["start_time"].min()
         max_time = df["end_time"].max()
 
+
+        breakpoint()
+        
         # Adjust min_time to the nearest earlier 12-minute interval
         min_time_adjusted = min_time - pd.Timedelta(
             minutes=min_time.minute % 12,
@@ -58,7 +62,7 @@ if __name__ == "__main__":
         )
 
         # Create a datetime index with a cadence of 12 minutes
-        time_index = pd.date_range(start=min_time_adjusted, end=max_time, freq="12T")
+        time_index = pd.date_range(start=min_time_adjusted, end=max_time, freq="12min")
 
         # Initialize the flarelabel_timeseries DataFrame
         flarelabel_timeseries = pd.DataFrame(
@@ -146,7 +150,218 @@ if __name__ == "__main__":
         plt.xlabel("Longitude (fl_lon)")  # X-axis label
         plt.ylabel("Latitude (fl_lat)")  # Y-axis label
         plt.grid(True)  # Show grid
-        plt.savefig("fl2cme_flare_location.jpg")  # Display the plot
+        plt.savefig("fl2cme_flare_location.jpg")  
+      
+        
+        # Plot flare class vs flare time
+        # Calculate the flare duration (difference between end_time and start_time)
+        df_filtered['flare_duration'] = (df_filtered['end_time'] - df_filtered['start_time']).dt.total_seconds() / 60  # Convert to minutes
+
+        # Map the goes_class to numerical values for plotting
+        # This mapping depends on the specific format of goes_class. Here's an example mapping:
+        class_mapping = {'C': 1, 'M': 2, 'X': 3}
+        # Extract the first letter of each goes_class and map it
+        df_filtered['goes_class_num'] = df_filtered['goes_class'].str[0].map(class_mapping)
+        # Plot flare duration vs. flare class
+        plt.figure(figsize=(10, 6))  # Set the figure size for better readability
+        plt.scatter(df_filtered['flare_duration'], df_filtered['goes_class_num'], color="green", alpha=0.5, s=10)
+
+        plt.title("Flare Duration vs. Flare Class")  # Title of the plot
+        plt.xlabel("Flare Duration (minutes)")  # X-axis label
+        plt.ylabel("Flare Class")  # Y-axis label
+        plt.yticks(list(class_mapping.values()), list(class_mapping.keys()))  # Set y-ticks to flare classes
+        # plt.grid(True)  # Show grid
+        plt.savefig("fl2cme_flare_duration_vs_class.jpg")  # Save the plot
+
+        # Assuming df_filtered is your DataFrame and 'goes_class' is the column with categorical data
+        # Sort the unique values of 'goes_class' alphabetically
+        unique_sorted = sorted(df_filtered['goes_class'].unique())
+
+        # Create a mapping from the sorted unique labels to a numeric representation
+        class_mapping = {value: key for key, value in enumerate(unique_sorted)}
+
+        # Map the 'goes_class' column to its numeric representation using the sorted mapping
+        df_filtered['goes_class_num'] = df_filtered['goes_class'].map(class_mapping)
+
+        # Plot flare duration vs. flare class
+        plt.figure(figsize=(10, 6))  # Set the figure size for better readability
+        plt.scatter(df_filtered['flare_duration'], df_filtered['goes_class_num'], color="green", alpha=0.5, s=10)
+
+        plt.title("Flare Duration vs. Flare Class")  # Title of the plot
+        plt.xlabel("Flare Duration (minutes)")  # X-axis label
+        plt.ylabel("Flare Class")  # Y-axis label
+        
+        n = 5  # For example, to plot every 5th label
+
+        # Assuming class_mapping is already defined and contains your flare class mappings
+        tick_values = list(class_mapping.values())
+        tick_labels = list(class_mapping.keys())
+
+        # Select every nth element for both values and labels
+        selected_tick_values = tick_values[::n]
+        selected_tick_labels = tick_labels[::n]
+ 
+        plt.yticks(selected_tick_values, selected_tick_labels)  # Set y-ticks to every nth flare class
+
+        # plt.yticks(list(class_mapping.values()), list(class_mapping.keys()))  # Set y-ticks to flare classes
+        # plt.grid(True)  # Show grid
+        plt.savefig("fl2cme_flare_duration_vs_class_detailed.jpg")  # Save the plot
+
+        
+        # Calculate statistics on flare duration
+        # All classes
+        fl_dur_all_class_stats = df_filtered.groupby("goes_class")["flare_duration"].describe()
+        print("Statistics of flare duration by class:")
+        print(fl_dur_all_class_stats)
+        fl_dur_all_class_stats.to_csv('flare_duration_stats_all_class.csv', index=True)
+
+        
+        # Group so that only first character of a class is considered i.e. C, X, M
+        df_filtered['goes_class_group1'] = df_filtered['goes_class'].str[:1]
+        fl_dur_grouped_stats = df_filtered.groupby("goes_class_group1")["flare_duration"].describe()
+
+        print("Statistics of flare duration by class:")
+        print(fl_dur_grouped_stats)
+        fl_dur_grouped_stats.to_csv('flare_duration_stats_1char_class.csv', index=True)
+
+        # Group so that only first two characters of a class are considered e.g. C1, C2, etc.
+        df_filtered['goes_class_group2'] = df_filtered['goes_class'].str[:2]
+        fl_dur_grouped_stats = df_filtered.groupby("goes_class_group2")["flare_duration"].describe()
+
+        print("Statistics of flare duration by class:")
+        print(fl_dur_grouped_stats)
+        fl_dur_grouped_stats.to_csv('flare_duration_stats_2char_class.csv', index=True)
+        
+        # Extract the 'mean' and 'std' column for plotting
+        mean_flare_duration = fl_dur_grouped_stats['mean']
+        std_flare_duration = fl_dur_grouped_stats['std']
+
+                
+        # Plotting
+        plt.figure(figsize=(10, 6))  # Set the figure size
+        plt.errorbar(mean_flare_duration.index, mean_flare_duration.values, yerr=std_flare_duration.values, fmt='o', capsize=5, linestyle='-', marker='s', markersize=5, label='Mean with STD')
+        plt.xlabel('Flare Class')  # Set the x-axis label
+        plt.ylabel('Mean Flare Duration (min)')  # Set the y-axis label
+        plt.title('Mean Flare Duration by Flare Class')  # Set the title
+        plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
+        plt.tight_layout()  # Adjust layout to not cut off labels
+        plt.savefig("fl2cme_mean_flare_duration_vs_class.jpg")  # Save the plot
+
+
+
+
+        # Plot time between flares
+        # Calculate the time differences between the end of one flare and the start of the next
+        # Shift the 'start_time' column up by one row to align the end of one flare with the start of the next
+        df_filtered['next_start'] = df_filtered['start_time'].shift(-1)
+        # Calculate the difference in min
+        df_filtered['time_diff_h'] = (df_filtered['next_start'] - df_filtered['end_time']).dt.total_seconds() / 3660
+
+        # Plot the time between flares
+        plt.figure(figsize=(10, 6))
+        plt.scatter(df_filtered['end_time'], df_filtered['time_diff_h'])
+        plt.title('Time Between Flares')
+        plt.xlabel('End Time of Flare')
+        plt.ylabel('Time to Next Flare (h)')
+        plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
+        plt.tight_layout()  # Adjust layout to make room for the rotated x-axis labels
+        plt.savefig("fl2cme_flare_time_in_between.jpg")  # Save the plot
+        
+
+        
+        # Calculate statistics on time between flares
+        # All classes
+        fl_diff_all_class_stats = df_filtered.groupby("goes_class")["time_diff_h"].describe()
+        print("Statistics of time between flares by class:")
+        print(fl_diff_all_class_stats)
+        fl_diff_all_class_stats.to_csv('time_diff_h_stats_all_class.csv', index=True)
+
+        
+        # Group so that only first character of a class is considered i.e. C, X, M
+        fl_diff_grouped_stats = df_filtered.groupby("goes_class_group1")["time_diff_h"].describe()
+
+        print("Statistics of time between flares by class:")
+        print(fl_diff_grouped_stats)
+        fl_diff_grouped_stats.to_csv('time_diff_h_stats_1char_class.csv', index=True)
+
+        # Group so that only first two characters of a class are considered e.g. C1, C2, etc.
+        fl_diff_grouped_stats = df_filtered.groupby("goes_class_group2")["time_diff_h"].describe()
+
+        print("Statistics of time between flares by class:")
+        print(fl_diff_grouped_stats)
+        fl_diff_grouped_stats.to_csv('time_diff_h_stats_2char_class.csv', index=True)
+        
+
+        # Extract the 'mean' and 'std' column for plotting
+        mean_flare_diff = fl_diff_grouped_stats['mean']
+        std_flare_diff = fl_diff_grouped_stats['std']
+
+                
+        # Plotting
+        plt.figure(figsize=(10, 6))  # Set the figure size
+        plt.errorbar(mean_flare_diff.index, mean_flare_diff.values, yerr=std_flare_diff.values, fmt='o', capsize=5, linestyle='-', marker='s', markersize=5, label='Mean with STD')
+        plt.xlabel('Flare Class')  # Set the x-axis label
+        plt.ylabel('Mean Difference in between Flares (h)')  # Set the y-axis label
+        plt.title('Mean and STD of Difference in between Flares by Flare Class')  # Set the title
+        plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
+        plt.tight_layout()  # Adjust layout to not cut off labels
+        plt.legend()  # Show legend
+        plt.savefig("fl2cme_mean_flare_diff_vs_class.jpg")  # Save the plot
+
+
+    
+        # Define bins for the histogram
+        bins = [float('-inf'), 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, float('inf')]
+        labels = ['overlaping','<1h', '1-2h', '2-3h', '3-4h', '4-5h', '5-6h', '6-7h', '7-8h', '8-9h', '9-10h', '>10h']
+
+        # Categorize each time difference into bins
+        df_filtered['time_diff_bin'] = pd.cut(df_filtered['time_diff_h'], bins=bins, labels=labels, right=False)
+
+        # Count the occurrences in each bin
+        time_diff_counts = df_filtered['time_diff_bin'].value_counts(sort=False)
+
+        # Plotting
+        plt.figure(figsize=(12, 6))
+        plt.bar(time_diff_counts.index, time_diff_counts.values, color='skyblue')
+        plt.xlabel('Time Difference (h)')
+        plt.ylabel('Number of Entries')
+        plt.title('Histogram of Time Difference between Flares Grouped by Hour')
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.savefig("fl2cme_hist_flare_diff.jpg")  # Save the plot
+
+
+        # Calculate the flare rate per year
+        # Calculate the observation period in years
+        min_time = df_filtered['start_time'].min()
+        max_time = df_filtered['end_time'].max()
+        total_years = (max_time - min_time).days / 365.25
+
+        # Initialize an empty DataFrame for the results
+        results_df = pd.DataFrame()
+
+        # Calculate the rate for each category and store in the DataFrame
+        for category in ['goes_class_group1', 'goes_class_group2']:
+            flare_counts = df_filtered.groupby(category).size()
+            flare_rates = flare_counts / total_years
+            print(f"Average annual rate of flares per {category}:")
+            print(flare_rates)
+
+            # Convert flare_rates to DataFrame and rename the column
+            flare_rates_df = flare_rates.to_frame(name='Flare Rate')
+            # Optionally, rename the index
+            flare_rates_df.index.rename('Flare Class', inplace=True)
+
+            # Save the rates to a CSV file
+            flare_rates_df.to_csv(f'flare_rate_{category}.csv', index=True)
+
+
+        breakpoint()
+
+
+
+        
+
 
         # Debuging the issue with lat-lon flare location (1997-2010)
         # path = "/home/data/flare_labels/fl2cme_soho.csv"
