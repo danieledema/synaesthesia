@@ -172,6 +172,42 @@ if __name__ == "__main__":
         # Calculate the flare duration (difference between end_time and start_time)
         df_filtered['flare_duration'] = (df_filtered['end_time'] - df_filtered['start_time']).dt.total_seconds() / 60  # Convert to minutes
 
+
+        # If flare lasts less than 12 min
+        # Check if the beginning and end time cross the 12 min interval
+        # Convert start and end times to minutes since the start of the hour
+        df_filtered['start_minute'] = df_filtered['start_time'].dt.minute + df_filtered['start_time'].dt.second / 60
+        df_filtered['end_minute'] = df_filtered['end_time'].dt.minute + df_filtered['end_time'].dt.second / 60
+
+        # Step 2: Define the image capture times
+        capture_times = [0, 12, 24, 36, 48, 60]
+
+        # Step 3: Check if each flare is covered by the images
+        def is_covered(row):
+            breakpoint()
+            if row['flare_duration'] < 12:
+                flare_start = row['start_minute']
+                
+                closest_capture_time = min(capture_times, key=lambda x: abs(x - flare_start))
+
+                # for capture_time in capture_times:
+                #     if capture_time <= row['start_minute'] < capture_time + 12:
+                #         # Check if the flare ends before the next image capture time
+                #         if row['end_minute'] <= capture_time + 12:
+                #             return True
+                return False
+            else:
+                return True
+
+
+        # Apply the function to each row in the DataFrame
+        df_filtered['is_covered'] = df_filtered.apply(is_covered, axis=1)
+
+        # Filter to get only the flares that are covered
+        df_covered = df_filtered[df_filtered['is_covered']]
+
+        breakpoint()
+        
         # Map the goes_class to numerical values for plotting
         # This mapping depends on the specific format of goes_class. Here's an example mapping:
         class_mapping = {'C': 1, 'M': 2, 'X': 3}
@@ -234,6 +270,7 @@ if __name__ == "__main__":
         # Group so that only first character of a class is considered i.e. C, X, M
         df_filtered['goes_class_group1'] = df_filtered['goes_class'].str[:1]
         fl_dur_grouped_stats = df_filtered.groupby("goes_class_group1")["flare_duration"].describe()
+
 
         print("Statistics of flare duration by class:")
         print(fl_dur_grouped_stats)
@@ -310,7 +347,7 @@ if __name__ == "__main__":
         # Extract the 'mean' and 'std' column for plotting
         mean_flare_diff = fl_diff_grouped_stats['mean']
         std_flare_diff = fl_diff_grouped_stats['std']
-
+        max_flare_diff = fl_diff_grouped_stats['max']
                 
         # Plotting
         plt.figure(figsize=(10, 6))  # Set the figure size
@@ -322,6 +359,19 @@ if __name__ == "__main__":
         plt.tight_layout()  # Adjust layout to not cut off labels
         plt.legend()  # Show legend
         plt.savefig("fl2cme_mean_flare_diff_vs_class.jpg")  # Save the plot
+
+
+        # Plotting Max separately
+        plt.figure(figsize=(10, 6))  # Set the figure size for max
+        plt.plot(max_flare_diff.index, max_flare_diff.values, marker='^', linestyle='--', color='r', label='Max')  # Plot max values
+        plt.xlabel('Flare Class')  # Set the x-axis label for max
+        plt.ylabel('Max Difference in between Flares (h)')  # Set the y-axis label for max
+        plt.title('Max of Difference in between Flares by Flare Class')  # Set the title for max
+        plt.xticks(rotation=45)  # Rotate x-axis labels for better readability for max
+        plt.yscale('log') 
+        plt.tight_layout()  # Adjust layout to not cut off labels for max
+        plt.legend()  # Show legend for max
+        plt.savefig("fl2cme_max_flare_diff_vs_class.jpg")  # Save the plot for max
 
 
     
