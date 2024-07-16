@@ -54,9 +54,11 @@ class MultiSignalDataset(DatasetBase):
 
         # Create a DataFrame to store timestamps and corresponding indices
         self.timestamp_df = self._initialize_timestamp_df()
+        print(len(self.timestamp_df))
 
         # Fill missing timestamps based on the fill method
         self._fill_missing_timestamps()
+        print(len(self.timestamps))
 
     def _initialize_timestamp_df(self) -> pd.DataFrame:
         """
