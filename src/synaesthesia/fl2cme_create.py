@@ -1,6 +1,6 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
+# import matplotlib.pyplot as plt
+# import numpy as np
 
 if __name__ == "__main__":
     """
@@ -71,9 +71,10 @@ if __name__ == "__main__":
         mask = (flarelabel_timeseries.index >= row["start_time"]) & (
             flarelabel_timeseries.index <= row["end_time"]
         )
+        
         # Assign the flare class to the flarelabel_timeseries DataFrame
         flarelabel_timeseries.loc[mask, "flareclass"] = row["goes_class"]
-        
+                
         # Assign the flare class category
         flareclass_str = str(row["goes_class"])
         if flareclass_str.startswith("C"):
@@ -82,6 +83,7 @@ if __name__ == "__main__":
             flarelabel_timeseries.loc[mask, "flareclass_category"] = 2
         elif flareclass_str.startswith("X"):
             flarelabel_timeseries.loc[mask, "flareclass_category"] = 3
+
 
     # Calculate percentage of each class category
     total_rows = len(flarelabel_timeseries)
