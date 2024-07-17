@@ -165,12 +165,16 @@ class MultiSignalDataset(DatasetBase):
                     # Remove timestamps that couldn't be filled (still None after interpolation)
                     self.timestamp_df = self.timestamp_df.dropna()
 
+            self._timestamps = [
+                np.datetime64(ts, "ns") for ts in self.timestamp_df.index
+            ]
+
     @property
     def timestamps(self) -> List[np.datetime64]:
         """
         Returns the list of timestamps in numpy.datetime64 format.
         """
-        return [np.datetime64(ts, "ns") for ts in self.timestamp_df.index]
+        return self._timestamps
 
     def __len__(self) -> int:
         """
@@ -223,7 +227,16 @@ class MultiSignalDataset(DatasetBase):
         """
         Returns a string representation of the MultiSignalDataset object.
         """
-        return f"MultiSignalDataset - {len(self)} samples\nDatasets: {len(self.single_signal_datasets)}"
+        print_string = f"MultiSignalDataset - {len(self)} samples\nDatasets: {len(self.single_signal_datasets)}\n"
+        for i, d in enumerate(self.single_signal_datasets):
+            inner_repr = repr(d)
+            lines = inner_repr.split("\n")
+            inner_repr = "\n".join(["\t" + line for line in lines])
+
+            print_string += f"{i} -------------\n"
+            print_string += inner_repr
+            print_string += "------------------\n"
+        return print_string
 
     @property
     def id(self):
