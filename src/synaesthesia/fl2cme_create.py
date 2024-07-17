@@ -35,7 +35,8 @@ if __name__ == "__main__":
 
     - think about other possible target variables
     """
-
+    mode = "simple_binary_labels"
+    
     path = "/home/data/flare_labels/fl2cme_vconf.csv"
 
     df = pd.read_csv(path)
@@ -58,56 +59,82 @@ if __name__ == "__main__":
     # Create a datetime index with a cadence of 12 minutes
     time_index = pd.date_range(start=min_time_adjusted, end=max_time, freq="12min")
 
-    # Initialize the flarelabel_timeseries DataFrame
-    flarelabel_timeseries = pd.DataFrame(
-        index=time_index, columns=["flareclass", "flareclass_category"]
-    )
-    flarelabel_timeseries["flareclass"] = 0
-    flarelabel_timeseries["flareclass_category"] = 0
 
-    # Populate the flareclass and flareclass_category columns
-    for i, row in df.iterrows():
-        # Create a mask for the time range of the flare
-        mask = (flarelabel_timeseries.index >= row["start_time"]) & (
-            flarelabel_timeseries.index <= row["end_time"]
-        )
+    if mode == "simple_binary_labels":
+        '''
+        For each 12-minute timestep, a label of class C, M, or X is assigned 
+        based on the active flare's GOES class. This class is assigned to the entire interval
+        and added to the flarelabel_timeseries DataFrame. The class category, 
+        based on the first letter of the flare class (C=1, M=2, X=3), is also added. 
+        Output is saved to a csv.      
+        '''
         
-        # Assign the flare class to the flarelabel_timeseries DataFrame
-        flarelabel_timeseries.loc[mask, "flareclass"] = row["goes_class"]
-                
-        # Assign the flare class category
-        flareclass_str = str(row["goes_class"])
-        if flareclass_str.startswith("C"):
-            flarelabel_timeseries.loc[mask, "flareclass_category"] = 1
-        elif flareclass_str.startswith("M"):
-            flarelabel_timeseries.loc[mask, "flareclass_category"] = 2
-        elif flareclass_str.startswith("X"):
-            flarelabel_timeseries.loc[mask, "flareclass_category"] = 3
+        # Initialize the flarelabel_timeseries DataFrame
+        flarelabel_timeseries = pd.DataFrame(
+            index=time_index, columns=["flareclass", "flareclass_category"]
+        )
+        flarelabel_timeseries["flareclass"] = 0
+        flarelabel_timeseries["flareclass_category"] = 0
+
+        # Populate the flareclass and flareclass_category columns
+        for i, row in df.iterrows():
+            # Create a mask for the time range of the flare
+            mask = (flarelabel_timeseries.index >= row["start_time"]) & (
+                flarelabel_timeseries.index <= row["end_time"]
+            )
+            
+            # Assign the flare class to the flarelabel_timeseries DataFrame
+            flarelabel_timeseries.loc[mask, "flareclass"] = row["goes_class"]
+                    
+            # Assign the flare class category
+            flareclass_str = str(row["goes_class"])
+            if flareclass_str.startswith("C"):
+                flarelabel_timeseries.loc[mask, "flareclass_category"] = 1
+            elif flareclass_str.startswith("M"):
+                flarelabel_timeseries.loc[mask, "flareclass_category"] = 2
+            elif flareclass_str.startswith("X"):
+                flarelabel_timeseries.loc[mask, "flareclass_category"] = 3
 
 
-    # Calculate percentage of each class category
-    total_rows = len(flarelabel_timeseries)
-    percentage_C = (
-        (flarelabel_timeseries["flareclass_category"] == 1).sum() / total_rows * 100
-    )
-    percentage_M = (
-        (flarelabel_timeseries["flareclass_category"] == 2).sum() / total_rows * 100
-    )
-    percentage_X = (
-        (flarelabel_timeseries["flareclass_category"] == 3).sum() / total_rows * 100
-    )
+        # Calculate percentage of each class category
+        total_rows = len(flarelabel_timeseries)
+        percentage_C = (
+            (flarelabel_timeseries["flareclass_category"] == 1).sum() / total_rows * 100
+        )
+        percentage_M = (
+            (flarelabel_timeseries["flareclass_category"] == 2).sum() / total_rows * 100
+        )
+        percentage_X = (
+            (flarelabel_timeseries["flareclass_category"] == 3).sum() / total_rows * 100
+        )
 
-    print(f"Percentage of C-class flares: {percentage_C:.2f}%")
-    print(f"Percentage of M-class flares: {percentage_M:.2f}%")
-    print(f"Percentage of X-class flares: {percentage_X:.2f}%")
+        print(f"Percentage of C-class flares: {percentage_C:.2f}%")
+        print(f"Percentage of M-class flares: {percentage_M:.2f}%")
+        print(f"Percentage of X-class flares: {percentage_X:.2f}%")
 
-    # Save the flarelabel_timeseries DataFrame to a CSV file
-    flarelabel_timeseries.to_csv(
-        "/home/data/flare_labels/flarelabel_timeseries.csv"
-    )
-    flarelabel_timeseries.to_csv(
-        "/home/hannahruedisser/2024-ESL-Vigil/tests/test_data/flarelabel_timeseries.csv"
-    )
-    df.to_csv("/home/hannahruedisser/2024-ESL-Vigil/tests/test_data/fl2cme.csv")
-    print(flarelabel_timeseries)
+        # Save the flarelabel_timeseries DataFrame to a CSV file
+        flarelabel_timeseries.to_csv(
+            "/home/data/flare_labels/flarelabel_timeseries.csv"
+        )
+        flarelabel_timeseries.to_csv(
+            "/home/hannahruedisser/2024-ESL-Vigil/tests/test_data/flarelabel_timeseries.csv"
+        )
+        df.to_csv("/home/hannahruedisser/2024-ESL-Vigil/tests/test_data/fl2cme.csv")
+        print(flarelabel_timeseries)
 
+    elif mode == "regression_labels":
+        '''
+        a matrix with time to next flare in minutes, separately for each class of flares
+        Rows - timestamps every 12 min
+        Col - Class
+        Fill with a time since last flare (of any class) in minutes 
+        So once a flare happens, the time to next flare is reset to 0
+        '''
+        
+        pass
+    
+    elif mode == "classification_labels":
+        '''
+        A label 
+        '''
+        pass
