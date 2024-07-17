@@ -1,14 +1,14 @@
 # Adapted to be general from https://github.com/FrontierDevelopmentLab/2023-FDL-X-ARD-EVE/blob/main/src/irradiance/utilities/data_loader.py
 
+import json
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-import pytorch_lightning as pl
 import torch
 import zarr
-import json
 from torch.utils.data import Dataset
 from tqdm import tqdm
-from pathlib import Path
 
 from .constants import ALL_COMPONENTS, ALL_IONS, ALL_WAVELENGTHS
 
