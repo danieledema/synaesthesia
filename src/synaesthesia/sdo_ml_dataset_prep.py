@@ -81,11 +81,19 @@ class SDOMLDatasetPrep(Dataset):
             self.eve_data = None
 
         if not self.isEVE:
-            self.training_years = [int(year) for year in self.hmi_data.keys()]
+            if self.aia_data is not None:
+               self.training_years = [int(year) for year in self.aia_data.keys()]  
+            if self.hmi_data is not None:
+               self.training_years = [int(year) for year in self.hmi_data.keys()]  
         else:  # EVE included, limit to 2010-2014
-            self.training_years = [
-                int(year) for year in self.hmi_data.keys() if int(year) < 2015
-            ]
+            if self.aia_data is not None:
+               self.training_years = [
+                   int(year) for year in self.aia_data.keys() if int(year) < 2015   
+                    ]
+            if self.hmi_data is not None:
+                self.training_years = [
+                    int(year) for year in self.hmi_data.keys() if int(year) < 2015   
+                    ]
 
         # Cache filenames
         ids = []
