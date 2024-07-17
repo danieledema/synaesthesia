@@ -1,4 +1,3 @@
-import random
 from typing import Any
 
 from .abstract_dataset import DatasetBase
@@ -34,8 +33,13 @@ class SequentialDataset(DatasetBase):
         else:
             raise ValueError("direction must be either 'future' or 'past'")
 
+        self._idxs = self.make_idxs()
+
     @property
     def idxs(self) -> list[int]:
+        return self._idxs
+
+    def make_idxs(self):
         total_length = len(self.dataset)
         indices = []
         for i in range(total_length):
