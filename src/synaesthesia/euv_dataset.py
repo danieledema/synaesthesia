@@ -1,9 +1,7 @@
 from collections import OrderedDict
-from datetime import datetime
 from pathlib import Path
 
 from astropy.io import fits
-from tqdm import tqdm
 
 from .abstract_dataset import DatasetBase
 from .utils import convert_to_datetime
@@ -70,7 +68,7 @@ class EuvDataset(DatasetBase):
         common_timestamps = list(self.data_dict.keys())
 
         # Populate self.data_dict with data indices for each wavelength
-        for wavelength in tqdm(wavelengths[1:]):
+        for wavelength in wavelengths[1:]:
             for i, timestamp in enumerate(timestamps_per_wavelength[wavelength]):
                 timestamp = self.find_closest_timestamp(timestamp, common_timestamps)
                 if timestamp:

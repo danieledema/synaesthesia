@@ -1,14 +1,14 @@
 # Adapted to be general from https://github.com/FrontierDevelopmentLab/2023-FDL-X-ARD-EVE/blob/main/src/irradiance/utilities/data_loader.py
 
+import json
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-import pytorch_lightning as pl
 import torch
 import zarr
-import json
 from torch.utils.data import Dataset
 from tqdm import tqdm
-from pathlib import Path
 
 from .constants import ALL_COMPONENTS, ALL_IONS, ALL_WAVELENGTHS
 
@@ -20,12 +20,12 @@ class SDOMLDatasetPrep(Dataset):
         hmi_path,  # hmi_data,
         aia_path,  # aia_data,
         eve_path,  # eve_data,
-        components,
-        wavelengths,
-        ions,
         frequency,  # freq,
         # months,
         # normalizations=None,
+        components: list[str] = ALL_COMPONENTS,
+        wavelengths: list[str] = ALL_WAVELENGTHS,
+        ions: list[str] = ALL_IONS,
         cache_dir="",
         apply_mask=True,  # mask=None,
         num_frames=1,
