@@ -2,6 +2,8 @@ from datetime import datetime, timedelta
 from typing import List
 
 import pandas as pd
+
+import numpy as np
 from tqdm import tqdm
 
 from .abstract_dataset import DatasetBase
@@ -14,10 +16,6 @@ def convert_to_datetime(timestamp):
         return datetime.strptime(timestamp, "%Y%m%dT%H%M")
     except ValueError:
         return datetime.strptime(timestamp, "%Y%m%dT%H%M%S%f")
-
-
-import numpy as np
-from tqdm import tqdm
 
 
 class MultiSignalDataset(DatasetBase):
