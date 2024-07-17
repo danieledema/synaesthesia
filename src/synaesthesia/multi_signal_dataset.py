@@ -50,15 +50,13 @@ class MultiSignalDataset(DatasetBase):
         self.time_cut = time_cut
         self.patch = patch
 
-        print("Initializing MultiSignalDataset...")
-
         # Create a DataFrame to store timestamps and corresponding indices
         self.timestamp_df = self._initialize_timestamp_df()
-        print(len(self.timestamp_df))
 
         # Fill missing timestamps based on the fill method
         self._fill_missing_timestamps()
-        print(len(self.timestamps))
+
+        self._timestamps = [np.datetime64(ts, "ns") for ts in self.timestamp_df.index]
 
     def _initialize_timestamp_df(self) -> pd.DataFrame:
         """
@@ -164,10 +162,6 @@ class MultiSignalDataset(DatasetBase):
                     print("Dropping timestamps that couldn't be filled...")
                     # Remove timestamps that couldn't be filled (still None after interpolation)
                     self.timestamp_df = self.timestamp_df.dropna()
-
-            self._timestamps = [
-                np.datetime64(ts, "ns") for ts in self.timestamp_df.index
-            ]
 
     @property
     def timestamps(self) -> List[np.datetime64]:
