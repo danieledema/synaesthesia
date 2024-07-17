@@ -154,10 +154,15 @@ if __name__ == "__main__":
             class_number = int(flareclass_str[1])
 
             # Map the class letter to a base number and calculate the category
-            base_numbers = {"C": 1, "M": 10, "X": 19}
+            base_numbers = {"C": 0, "M": 9, "X": 18}
             if class_letter in base_numbers:
-                category_number = base_numbers[class_letter] + class_number
-                flarelabel_timeseries.loc[mask, "flareclass_category"] = category_number
+                # Combine all X flares into one category
+                if class_letter == 'X':
+                    flarelabel_timeseries.loc[mask, "flareclass_category"] = 18
+                else:
+                    category_number = base_numbers[class_letter] + class_number
+                    flarelabel_timeseries.loc[mask, "flareclass_category"] = category_number
+            # breakpoint()
 
         # Calculate count and percentage of each class category
         total_rows = len(flarelabel_timeseries)
@@ -168,6 +173,8 @@ if __name__ == "__main__":
 
         for category in categories:
             print(f"Category {category}: Count = {counts[category]}, Percentage = {percentages[category]:.2f}%")
+
+        # breakpoint()
 
         # Save the flarelabel_timeseries DataFrame to a CSV file
         flarelabel_timeseries.to_csv(
