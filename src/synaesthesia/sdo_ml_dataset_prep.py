@@ -82,6 +82,7 @@ class SDOMLDatasetPrep(Dataset):
             self.eve_data = None
 
         if len(restrict_years) > 0:
+            print(f"Restricting years to {restrict_years}")
             self.training_years = restrict_years
         else:
             if not self.isEVE:
@@ -297,6 +298,9 @@ class SDOMLDatasetPrep(Dataset):
         This function extracts the common indexes across aia and eve datasets, considering potential missing values.
         """
 
+        def filter_by_year(df, years):
+            return df[df.index.year.isin(years)]
+
         # Check the cache
         if Path(self.index_cache_filename).exists():
             print(
@@ -305,6 +309,7 @@ class SDOMLDatasetPrep(Dataset):
             aligndata = pd.read_csv(self.index_cache_filename)
             aligndata["Time"] = pd.to_datetime(aligndata["Time"])
             aligndata.set_index("Time", inplace=True)
+            aligndata = filter_by_year(aligndata, self.training_years)
             return aligndata
 
         print(f"No alignment cache found at {self.index_cache_filename}")
@@ -315,6 +320,7 @@ class SDOMLDatasetPrep(Dataset):
             aligndata = pd.read_csv(self.index_full_cache_filename)
             aligndata["Time"] = pd.to_datetime(aligndata["Time"])
             aligndata.set_index("Time", inplace=True)
+            aligndata = filter_by_year(aligndata, self.training_years)
             return aligndata
 
         print(f"\nData alignment calculation begin:")
