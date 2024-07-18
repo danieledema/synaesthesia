@@ -32,6 +32,7 @@ class SDOMLDatasetPrep(Dataset):
         drop_frame_dim=False,
         min_date=None,
         max_date=None,
+        restrict_years=[],
     ):
 
         super().__init__()
@@ -80,20 +81,23 @@ class SDOMLDatasetPrep(Dataset):
         else:
             self.eve_data = None
 
-        if not self.isEVE:
-            if self.aia_data is not None:
-                self.training_years = [int(year) for year in self.aia_data.keys()]
-            if self.hmi_data is not None:
-                self.training_years = [int(year) for year in self.hmi_data.keys()]
-        else:  # EVE included, limit to 2010-2014
-            if self.aia_data is not None:
-                self.training_years = [
-                    int(year) for year in self.aia_data.keys() if int(year) < 2015
-                ]
-            if self.hmi_data is not None:
-                self.training_years = [
-                    int(year) for year in self.hmi_data.keys() if int(year) < 2015
-                ]
+        if len(restrict_years) > 0:
+            self.training_years = restrict_years
+        else:
+            if not self.isEVE:
+                if self.aia_data is not None:
+                    self.training_years = [int(year) for year in self.aia_data.keys()]
+                if self.hmi_data is not None:
+                    self.training_years = [int(year) for year in self.hmi_data.keys()]
+            else:  # EVE included, limit to 2010-2014
+                if self.aia_data is not None:
+                    self.training_years = [
+                        int(year) for year in self.aia_data.keys() if int(year) < 2015
+                    ]
+                if self.hmi_data is not None:
+                    self.training_years = [
+                        int(year) for year in self.hmi_data.keys() if int(year) < 2015
+                    ]
 
         # Cache filenames
         ids = []
