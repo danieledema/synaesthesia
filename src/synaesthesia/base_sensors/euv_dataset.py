@@ -1,10 +1,9 @@
 from collections import OrderedDict
 from pathlib import Path
+from typing import Any
 
-from astropy.io import fits
-
-from .abstract_dataset import DatasetBase
-from .utils import convert_to_datetime
+from ..abstract.conversion import convert_to_timestamp
+from ..abstract.dataset_base import DatasetBase
 
 
 class EuvDataset(DatasetBase):
@@ -24,8 +23,11 @@ class EuvDataset(DatasetBase):
         self,
         folder_path: str | Path,
         wavelengths: list[str],
-        level: int = 2,
-        time_threshold: int = 60,
+        level: int | None = 2,
+        time_threshold: int | None = 60,
+        remove_incomplete: bool = True,
+        remove_duplicates: bool = True,
+        duplicate_threshold: int = 10,
     ):
         """
         Initializes the EUV dataset.
@@ -41,68 +43,63 @@ class EuvDataset(DatasetBase):
         self.folder_path = Path(folder_path)
         self.wavelengths = wavelengths
         self.level = level
-        self.time_threshold = time_threshold
 
-        # Initialize an empty dictionary to hold file paths for each wavelength
-        self.files = {}
-
-        # Populate self.files with sorted lists of file paths for each wavelength
-        for wavelength in wavelengths:
-            self.files[wavelength] = sorted(
-                list(self.folder_path.glob(f"L{level}/**/*fsi{wavelength}*.fits"))
-            )
-
-        # Initialize an OrderedDict to store common timestamps and their corresponding data indices
-        timestamps_per_wavelength = {}
-
-        # Populate timestamps_per_wavelength with lists of timestamps for each wavelength
-        for wavelength in wavelengths:
-            timestamps_per_wavelength[wavelength] = [
-                self.get_timestamp_from_filename(f) for f in self.files[wavelength]
-            ]
-
-        # Initialize an OrderedDict to store common timestamps and their corresponding data indices
+        files: list[Path] = self.collect_files()
         self.data_dict = OrderedDict()
-        for i, timestamp in enumerate(timestamps_per_wavelength[wavelengths[0]]):
-            self.data_dict[timestamp] = {wavelengths[0]: i}
-        common_timestamps = list(self.data_dict.keys())
 
-        # Populate self.data_dict with data indices for each wavelength
-        for wavelength in wavelengths[1:]:
-            for i, timestamp in enumerate(timestamps_per_wavelength[wavelength]):
-                timestamp = self.find_closest_timestamp(timestamp, common_timestamps)
-                if timestamp:
-                    self.data_dict[timestamp][wavelength] = i
+        last_timestamp = 0
+        for file in files:
+            timestamp, wavelength = self.parse_filename(file)
+            timestamp = convert_to_timestamp(timestamp)
 
-        for timestamp in list(self.data_dict.keys()):
-            if len(self.data_dict[timestamp]) != len(wavelengths):
-                del self.data_dict[timestamp]
+            if not wavelength == self.wavelengths[0]:
+                continue
+
+            if remove_duplicates and timestamp - last_timestamp < duplicate_threshold:
+                continue
+
+            self.data_dict[timestamp] = {}
+            last_timestamp = timestamp
 
         self._timestamps = list(self.data_dict.keys())
+        last_timestamp_idx = 0
+        for file in files:
+            timestamp, wavelength = self.parse_filename(file)
+
+            idx_prior = max(0, last_timestamp_idx - 1)
+            idx = last_timestamp_idx
+            idx_next = min(len(self._timestamps) - 1, last_timestamp_idx + 1)
+
+            dt_prior = timestamp - self._timestamps[idx_prior]
+            dt = timestamp - self._timestamps[idx]
+            dt_next = self._timestamps[idx_next] - timestamp
+
+            idx_closest = idx
+            if dt_prior < dt and dt_prior < dt_next:
+                idx_closest = idx_prior
+            elif dt_next < dt and dt_next < dt_prior:
+                idx_closest = idx_next
+            else:
+                idx_closest = idx
+
+            if abs(self._timestamps[idx_closest] - timestamp) < time_threshold:
+                self.data_dict[timestamp][wavelength] = file
+
+        if remove_incomplete:
+            for timestamp in list(self.data_dict.keys()):
+                if len(self.data_dict[timestamp]) != len(wavelengths):
+                    del self.data_dict[timestamp]
+
+        self._timestamps = list(self.data_dict.keys())
+
+    def collect_files(self) -> list[Path]:
+        raise NotImplementedError
 
     @property
     def timestamps(self):
         return self._timestamps
 
-    def find_closest_timestamp(self, timestamp, timestamps):
-        """
-        Finds the closest timestamp to the given timestamp.
-
-        Args:
-            timestamp (str): Timestamp to find the closest match for.
-            timestamps (list): List of common timestamps to search for a match.
-
-        Returns:
-            str: Closest matching timestamp.
-        """
-        timestamp = convert_to_datetime(timestamp)
-        for t in timestamps:
-            t_tmp = convert_to_datetime(t)
-            if abs(t_tmp - timestamp).total_seconds() <= self.time_threshold:
-                return t
-        return None
-
-    def __len__(self):
+    def __len__(self) -> int:
         """
         Returns the number of common timestamps available in the dataset.
 
@@ -111,7 +108,7 @@ class EuvDataset(DatasetBase):
         """
         return len(self.timestamps)
 
-    def get_data(self, idx):
+    def get_data(self, idx) -> dict[str, Any]:
         """
         Retrieves data corresponding to the timestamp at index `idx` in the dataset.
 
@@ -124,24 +121,15 @@ class EuvDataset(DatasetBase):
         timestamp = self.get_timestamp(idx)
         data = {}
         for wavelength in self.wavelengths:
-            file_idx = self.data_dict[timestamp][wavelength]
-            file_path = self.files[wavelength][file_idx]
-            with fits.open(file_path) as hdul:
-                data[f"{wavelength}"] = hdul[1].data
+            file_path = self.data_dict[timestamp][wavelength]
+            data[f"{wavelength}"] = self.read_data(file_path)
         return data
 
-    @staticmethod
-    def get_timestamp_from_filename(filename):
-        """
-        Static method to extract timestamp from a given filename.
+    def read_data(self, file_path: Path) -> Any:
+        raise NotImplementedError
 
-        Args:
-            filename (Path or str): Filename from which to extract the timestamp.
-
-        Returns:
-            str: Extracted timestamp.
-        """
-        return filename.name.split("_")[-2]
+    def parse_filename(self, filename) -> tuple[int, str]:
+        raise NotImplementedError
 
     def get_timestamp(self, idx):
         """
