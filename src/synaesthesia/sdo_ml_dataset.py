@@ -6,6 +6,7 @@ import numpy as np
 
 from .abstract_dataset import DatasetBase
 from .constants import ALL_COMPONENTS, ALL_WAVELENGTHS
+from .utils import convert_to_datetime
 
 
 class SDOMLDataset(DatasetBase):
@@ -29,6 +30,8 @@ class SDOMLDataset(DatasetBase):
         for file in files:
             filename = file.stem
             timestamp, label = filename.split("_")
+
+            timestamp = convert_to_datetime(timestamp)
 
             if timestamp not in self.data:
                 self.data[timestamp] = {}
