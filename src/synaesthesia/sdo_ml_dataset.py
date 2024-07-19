@@ -32,6 +32,7 @@ class SDOMLDataset(DatasetBase):
             timestamp, label = filename.split("_")
 
             timestamp = convert_to_datetime(timestamp)
+            timestamp = np.datetime64(timestamp)
 
             if timestamp not in self.data:
                 self.data[timestamp] = {}
