@@ -5,7 +5,7 @@ from matplotlib.lines import Line2D
 
 if __name__ == "__main__":
 
-    path = "/home/data/flare_labels/flarelabel_timeseries.csv"
+    path = "/mnt/data/flare_labels/flarelabel_timeseries.csv"
     # Load the dataset
     dataset = pd.read_csv(path)
 
