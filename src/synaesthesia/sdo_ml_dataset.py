@@ -42,7 +42,7 @@ class SDOMLDataset(DatasetBase):
         return len(self.data)
 
     def get_data(self, idx) -> dict[str, Any]:
-        data = {l: np.load(f) for l, f in self.data[idx].items()}
+        data = {l: np.load(f) for l, f in self.data[self.get_timestamp(idx)].items()}
         return data
 
     def get_timestamp(self, idx):
