@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta
 from typing import List
 
-import pandas as pd
-
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 
 from .abstract_dataset import DatasetBase

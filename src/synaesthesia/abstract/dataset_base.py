@@ -17,19 +17,19 @@ class DatasetBase(Dataset):
         data_sample |= data
         return data_sample
 
-    def __len__(self):
+    def __len__(self) -> int:
         raise NotImplementedError
 
     def get_data(self, idx) -> dict[str, Any]:
         raise NotImplementedError
 
-    def get_timestamp(self, idx):
+    def get_timestamp(self, idx) -> int:
         raise NotImplementedError
 
-    def get_timestamp_idx(self, timestamp):
+    def get_timestamp_idx(self, timestamp) -> int:
         raise NotImplementedError
 
-    def __contains__(self, t):
+    def __contains__(self, t) -> bool:
         try:
             _ = self.get_timestamp_idx(t)
             return True
@@ -41,15 +41,15 @@ class DatasetBase(Dataset):
         raise NotImplementedError
 
     @property
-    def id(self):
+    def id(self) -> str:
         raise NotImplementedError
 
     @property
-    def satellite_name(self):
+    def satellite_name(self) -> str:
         raise NotImplementedError
 
     @property
-    def timestamps(self):
+    def timestamps(self) -> list[int]:
         raise NotImplementedError
 
     def __repr__(self) -> str:
