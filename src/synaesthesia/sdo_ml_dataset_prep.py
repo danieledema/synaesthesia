@@ -32,6 +32,7 @@ class SDOMLDatasetPrep(Dataset):
         drop_frame_dim=False,
         min_date=None,
         max_date=None,
+        restrict_years=[],
     ):
 
         super().__init__()
@@ -80,20 +81,24 @@ class SDOMLDatasetPrep(Dataset):
         else:
             self.eve_data = None
 
-        if not self.isEVE:
-            if self.aia_data is not None:
-                self.training_years = [int(year) for year in self.aia_data.keys()]
-            if self.hmi_data is not None:
-                self.training_years = [int(year) for year in self.hmi_data.keys()]
-        else:  # EVE included, limit to 2010-2014
-            if self.aia_data is not None:
-                self.training_years = [
-                    int(year) for year in self.aia_data.keys() if int(year) < 2015
-                ]
-            if self.hmi_data is not None:
-                self.training_years = [
-                    int(year) for year in self.hmi_data.keys() if int(year) < 2015
-                ]
+        if len(restrict_years) > 0:
+            print(f"Restricting years to {restrict_years}")
+            self.training_years = restrict_years
+        else:
+            if not self.isEVE:
+                if self.aia_data is not None:
+                    self.training_years = [int(year) for year in self.aia_data.keys()]
+                if self.hmi_data is not None:
+                    self.training_years = [int(year) for year in self.hmi_data.keys()]
+            else:  # EVE included, limit to 2010-2014
+                if self.aia_data is not None:
+                    self.training_years = [
+                        int(year) for year in self.aia_data.keys() if int(year) < 2015
+                    ]
+                if self.hmi_data is not None:
+                    self.training_years = [
+                        int(year) for year in self.hmi_data.keys() if int(year) < 2015
+                    ]
 
         # Cache filenames
         ids = []
@@ -293,6 +298,9 @@ class SDOMLDatasetPrep(Dataset):
         This function extracts the common indexes across aia and eve datasets, considering potential missing values.
         """
 
+        def filter_by_year(df, years):
+            return df[df.index.year.isin(years)]
+
         # Check the cache
         if Path(self.index_cache_filename).exists():
             print(
@@ -301,6 +309,7 @@ class SDOMLDatasetPrep(Dataset):
             aligndata = pd.read_csv(self.index_cache_filename)
             aligndata["Time"] = pd.to_datetime(aligndata["Time"])
             aligndata.set_index("Time", inplace=True)
+            aligndata = filter_by_year(aligndata, self.training_years)
             return aligndata
 
         print(f"No alignment cache found at {self.index_cache_filename}")
@@ -311,6 +320,7 @@ class SDOMLDatasetPrep(Dataset):
             aligndata = pd.read_csv(self.index_full_cache_filename)
             aligndata["Time"] = pd.to_datetime(aligndata["Time"])
             aligndata.set_index("Time", inplace=True)
+            aligndata = filter_by_year(aligndata, self.training_years)
             return aligndata
 
         print(f"\nData alignment calculation begin:")

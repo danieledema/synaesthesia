@@ -1,4 +1,5 @@
 import pandas as pd
+
 # import matplotlib.pyplot as plt
 # import numpy as np
 
@@ -37,7 +38,7 @@ if __name__ == "__main__":
     """
     # mode = "simple_binary_labels"
     mode = "expanded_binary_labels"
-    
+
     path = "/home/data/flare_labels/fl2cme_vconf.csv"
 
     df = pd.read_csv(path)
@@ -49,7 +50,6 @@ if __name__ == "__main__":
     min_time = df["start_time"].min()
     max_time = df["end_time"].max()
 
-    
     # Adjust min_time to the nearest earlier 12-minute interval
     min_time_adjusted = min_time - pd.Timedelta(
         minutes=min_time.minute % 12,
@@ -60,16 +60,15 @@ if __name__ == "__main__":
     # Create a datetime index with a cadence of 12 minutes
     time_index = pd.date_range(start=min_time_adjusted, end=max_time, freq="12min")
 
-
     if mode == "simple_binary_labels":
-        '''
-        For each 12-minute timestep, a label of class C, M, or X is assigned 
+        """
+        For each 12-minute timestep, a label of class C, M, or X is assigned
         based on the active flare's GOES class. This class is assigned to the entire interval
-        and added to the flarelabel_timeseries DataFrame. The class category, 
-        based on the first letter of the flare class (C=1, M=2, X=3), is also added. 
-        Output is saved to a csv.      
-        '''
-        
+        and added to the flarelabel_timeseries DataFrame. The class category,
+        based on the first letter of the flare class (C=1, M=2, X=3), is also added.
+        Output is saved to a csv.
+        """
+
         # Initialize the flarelabel_timeseries DataFrame
         flarelabel_timeseries = pd.DataFrame(
             index=time_index, columns=["flareclass", "flareclass_category"]
@@ -83,10 +82,10 @@ if __name__ == "__main__":
             mask = (flarelabel_timeseries.index >= row["start_time"]) & (
                 flarelabel_timeseries.index <= row["end_time"]
             )
-            
+
             # Assign the flare class to the flarelabel_timeseries DataFrame
             flarelabel_timeseries.loc[mask, "flareclass"] = row["goes_class"]
-                    
+
             # Assign the flare class category
             flareclass_str = str(row["goes_class"])
             if flareclass_str.startswith("C"):
@@ -95,7 +94,6 @@ if __name__ == "__main__":
                 flarelabel_timeseries.loc[mask, "flareclass_category"] = 2
             elif flareclass_str.startswith("X"):
                 flarelabel_timeseries.loc[mask, "flareclass_category"] = 3
-
 
         # Calculate percentage of each class category
         total_rows = len(flarelabel_timeseries)
@@ -122,15 +120,14 @@ if __name__ == "__main__":
         )
         df.to_csv("/home/hannahruedisser/2024-ESL-Vigil/tests/test_data/fl2cme.csv")
         print(flarelabel_timeseries)
-        
-        
+
     if mode == "expanded_binary_labels":
-        '''
-        For each 12-minute timestep, a label of class Cn, Mn, or Xn is assigned 
-        based on the active flare's GOES class, where n is a number from 1 to 9. 
-        Output is saved to a csv.      
-        '''
-        
+        """
+        For each 12-minute timestep, a label of class Cn, Mn, or Xn is assigned
+        based on the active flare's GOES class, where n is a number from 1 to 9.
+        Output is saved to a csv.
+        """
+
         # Initialize the flarelabel_timeseries DataFrame
         flarelabel_timeseries = pd.DataFrame(
             index=time_index, columns=["flareclass", "flareclass_category"]
@@ -144,10 +141,10 @@ if __name__ == "__main__":
             mask = (flarelabel_timeseries.index >= row["start_time"]) & (
                 flarelabel_timeseries.index <= row["end_time"]
             )
-            
+
             # Assign the flare class to the flarelabel_timeseries DataFrame
             flarelabel_timeseries.loc[mask, "flareclass"] = row["goes_class"]
-                    
+
             # Assign the flare class category
             flareclass_str = str(row["goes_class"])
             class_letter = flareclass_str[0]
@@ -157,22 +154,30 @@ if __name__ == "__main__":
             base_numbers = {"C": 0, "M": 9, "X": 18}
             if class_letter in base_numbers:
                 # Combine all X flares into one category
-                if class_letter == 'X':
+                if class_letter == "X":
                     flarelabel_timeseries.loc[mask, "flareclass_category"] = 18
                 else:
                     category_number = base_numbers[class_letter] + class_number
-                    flarelabel_timeseries.loc[mask, "flareclass_category"] = category_number
+                    flarelabel_timeseries.loc[mask, "flareclass_category"] = (
+                        category_number
+                    )
             # breakpoint()
 
         # Calculate count and percentage of each class category
         total_rows = len(flarelabel_timeseries)
         categories = sorted(flarelabel_timeseries["flareclass_category"].unique())
-        counts = flarelabel_timeseries["flareclass_category"].value_counts().sort_index()
+        counts = (
+            flarelabel_timeseries["flareclass_category"].value_counts().sort_index()
+        )
 
-        percentages = {category: (counts[category] / total_rows * 100) for category in categories}
+        percentages = {
+            category: (counts[category] / total_rows * 100) for category in categories
+        }
 
         for category in categories:
-            print(f"Category {category}: Count = {counts[category]}, Percentage = {percentages[category]:.2f}%")
+            print(
+                f"Category {category}: Count = {counts[category]}, Percentage = {percentages[category]:.2f}%"
+            )
 
         # breakpoint()
 
@@ -186,18 +191,18 @@ if __name__ == "__main__":
         print(flarelabel_timeseries)
 
     elif mode == "regression_labels":
-        '''
+        """
         a matrix with time to next flare in minutes, separately for each class of flares
         Rows - timestamps every 12 min
         Col - Class
-        Fill with a time since last flare (of any class) in minutes 
+        Fill with a time since last flare (of any class) in minutes
         So once a flare happens, the time to next flare is reset to 0
-        '''
-        
+        """
+
         pass
-    
+
     elif mode == "classification_labels":
-        '''
-        A label 
-        '''
+        """
+        A label
+        """
         pass
