@@ -12,6 +12,7 @@ class SequentialDataset(DatasetBase):
         stride=1,
         direction="future",
         delay_start=0,
+        version="1D",
         return_timestamps=False,
     ):
         self.dataset = dataset
@@ -20,6 +21,7 @@ class SequentialDataset(DatasetBase):
         self.stride = stride
         self.direction = direction
         self.delay_start = delay_start
+        self.version = version
         self.return_timestamps = return_timestamps
 
         idx_format = [
@@ -33,6 +35,9 @@ class SequentialDataset(DatasetBase):
         else:
             raise ValueError("direction must be either 'future' or 'past'")
 
+        if self.version == "1D":
+            if self.n_samples > 1:
+                print(f"1D version - Taking max of next {n_samples} samples!")
         self._idxs = self.make_idxs()
 
     @property
@@ -68,7 +73,6 @@ class SequentialDataset(DatasetBase):
 
         original_idx = self.idxs[idx]
         seq_idxs = [original_idx + f for f in self.idx_format]
-
         data_list = [self.dataset.get_data(i) for i in seq_idxs]
         data = {d: [] for d in data_list[0]}
         for d in data_list:
@@ -78,6 +82,9 @@ class SequentialDataset(DatasetBase):
         if self.return_timestamps:
             seq_timestamps = [self.dataset.get_timestamp(i) for i in seq_idxs]
             data["timestamps"] = seq_timestamps
+
+        if self.version == "1D" and "flare_class" in data.keys():
+            data["flare_class"] = [max(data["flare_class"])]
 
         return data
 
