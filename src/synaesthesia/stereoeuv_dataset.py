@@ -41,7 +41,7 @@ class StereoEuvDataset(DatasetBase):
 
             fig = plt.figure(figsize=(10, 10))
             ax = fig.add_subplot(1, 1, 1, projection=map_obj.wcs)
-            map_obj.plot(axes=ax, clip_interval=(50, 99.99)*u.percent)
+            map_obj.plot(axes=ax, clip_interval=(50, 99.99) * u.percent)
             map_obj.draw_limb(axes=ax)
             map_obj.draw_grid(axes=ax)
             ax.set_position([0.1, 0.1, 0.8, 0.7])
@@ -70,7 +70,7 @@ class StereoEuvDataset(DatasetBase):
         rotated_image = image.rotate(angle, expand=True)
 
         return rotated_image
-    
+
     def crop_image(self, image_data: np.ndarray) -> np.ndarray:
         """Crop an image using specified dimensions.
 
