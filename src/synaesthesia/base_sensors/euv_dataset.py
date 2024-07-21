@@ -1,8 +1,6 @@
-from collections import OrderedDict
 from pathlib import Path
 from typing import Any
 
-from ..abstract.conversion import convert_to_timestamp
 from ..abstract.dataset_base import DatasetBase
 
 
@@ -45,12 +43,12 @@ class EuvDataset(DatasetBase):
         self.level = level
 
         files: list[Path] = self.collect_files()
-        self.data_dict = OrderedDict()
+        self.data_dict = {}
+        self._timestamps = []
 
         last_timestamp = 0
         for file in files:
             timestamp, wavelength = self.parse_filename(file)
-            timestamp = convert_to_timestamp(timestamp)
 
             if not wavelength == self.wavelengths[0]:
                 continue
@@ -58,32 +56,47 @@ class EuvDataset(DatasetBase):
             if remove_duplicates and timestamp - last_timestamp < duplicate_threshold:
                 continue
 
-            self.data_dict[timestamp] = {}
+            self.data_dict[timestamp] = {wavelength: file}
+            self._timestamps.append(timestamp)
             last_timestamp = timestamp
 
-        self._timestamps = list(self.data_dict.keys())
-        last_timestamp_idx = 0
-        for file in files:
-            timestamp, wavelength = self.parse_filename(file)
+        for wavelength in self.wavelengths[1:]:
+            last_timestamp_idx = 0
+            for file in files:
+                timestamp, wl = self.parse_filename(file)
 
-            idx_prior = max(0, last_timestamp_idx - 1)
-            idx = last_timestamp_idx
-            idx_next = min(len(self._timestamps) - 1, last_timestamp_idx + 1)
+                if not wl == wavelength:
+                    continue
 
-            dt_prior = timestamp - self._timestamps[idx_prior]
-            dt = timestamp - self._timestamps[idx]
-            dt_next = self._timestamps[idx_next] - timestamp
+                idx_prior = max(0, last_timestamp_idx - 1)
+                idx = last_timestamp_idx
+                idx_next = min(len(self._timestamps) - 1, last_timestamp_idx + 1)
 
-            idx_closest = idx
-            if dt_prior < dt and dt_prior < dt_next:
-                idx_closest = idx_prior
-            elif dt_next < dt and dt_next < dt_prior:
-                idx_closest = idx_next
-            else:
+                dt_prior = abs(timestamp - self._timestamps[idx_prior])
+                dt = abs(timestamp - self._timestamps[idx])
+                dt_next = abs(self._timestamps[idx_next] - timestamp)
+
                 idx_closest = idx
+                if dt_prior <= dt and dt_prior < dt_next:
+                    idx_closest = idx_prior
+                elif dt_next < dt and dt_next < dt_prior:
+                    idx_closest = idx_next
+                else:
+                    idx_closest = idx
 
-            if abs(self._timestamps[idx_closest] - timestamp) < time_threshold:
-                self.data_dict[timestamp][wavelength] = file
+                if abs(self._timestamps[idx_closest] - timestamp) < time_threshold:
+                    self.data_dict[self._timestamps[idx_closest]][wavelength] = file
+                    last_timestamp_idx = idx_closest
+                else:
+                    self.data_dict[timestamp] = {wavelength: file}
+
+                    while self._timestamps[last_timestamp_idx] < timestamp:
+                        last_timestamp_idx += 1
+                    while self._timestamps[last_timestamp_idx] > timestamp:
+                        last_timestamp_idx -= 1
+                    self._timestamps.insert(last_timestamp_idx, timestamp)
+
+            breakpoint()
 
         if remove_incomplete:
             for timestamp in list(self.data_dict.keys()):
