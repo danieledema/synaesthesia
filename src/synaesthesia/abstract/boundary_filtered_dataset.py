@@ -1,9 +1,8 @@
 import numpy as np
-import pandas as pd
 from tqdm import tqdm
 
-from .abstract_dataset import DatasetBase
-from .utils import convert_to_datetime
+from .conversion import convert_to_timestamp
+from .dataset_base import DatasetBase
 
 
 def parse_custom_datetime(dt_str):

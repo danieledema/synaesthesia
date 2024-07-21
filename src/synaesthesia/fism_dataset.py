@@ -2,11 +2,12 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from threading import Lock
 from typing import Dict, List, OrderedDict, Tuple, Union
-import numpy as np
-import netCDF4 as nc
 
-from .abstract_dataset import DatasetBase
-from .utils import convert_to_datetime
+import netCDF4 as nc
+import numpy as np
+
+from .abstract.conversion import convert_to_timestamp
+from .abstract.dataset_base import DatasetBase
 
 
 class PicklableLock:

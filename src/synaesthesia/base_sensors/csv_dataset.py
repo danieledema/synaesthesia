@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas
 
-from src.vigil2.data.abstract_dataset import DatasetBase
+from ..abstract.dataset_base import DatasetBase
 
 
 class CsvDataset(DatasetBase):

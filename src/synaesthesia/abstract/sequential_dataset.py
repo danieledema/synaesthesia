@@ -1,6 +1,6 @@
 from typing import Any
 
-from .abstract_dataset import DatasetBase
+from .dataset_base import DatasetBase
 
 
 class SequentialDataset(DatasetBase):

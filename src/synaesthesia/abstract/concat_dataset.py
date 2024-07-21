@@ -1,4 +1,4 @@
-from .abstract_dataset import DatasetBase
+from .dataset_base import DatasetBase
 
 
 class CustomConcatDataset(DatasetBase):
