@@ -96,8 +96,6 @@ class EuvDataset(DatasetBase):
                         last_timestamp_idx -= 1
                     self._timestamps.insert(last_timestamp_idx, timestamp)
 
-            breakpoint()
-
         if remove_incomplete:
             for timestamp in list(self.data_dict.keys()):
                 if len(self.data_dict[timestamp]) != len(wavelengths):
