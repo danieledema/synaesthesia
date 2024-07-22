@@ -56,17 +56,16 @@ class SequentialDataset(DatasetBase):
             if all(0 <= idx < total_length for idx in idxs):
                 indices.append(i)
         return indices
-
+    
     def __len__(self) -> int:
         return len(self.idxs)
-
+    
     @property
     def timestamps(self) -> list[int]:
         t = self.dataset.timestamps
         return [t[i] for i in self.idxs]
 
     def get_data(self, idx) -> dict[str, Any]:
-
         if idx >= len(self):
             raise IndexError(
                 f"Index {idx} out of range for dataset of length {len(self)}"
