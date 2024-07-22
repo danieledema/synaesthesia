@@ -65,7 +65,7 @@ class SequentialDataset(DatasetBase):
     def timestamps(self) -> list[int]:
         t = self.dataset.timestamps
         return [t[i] for i in self.idxs]
-    
+
     def get_data(self, idx) -> dict[str, Any]:
 
         if idx >= len(self):

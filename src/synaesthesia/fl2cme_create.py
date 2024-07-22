@@ -40,7 +40,7 @@ if __name__ == "__main__":
     mode = "max_n_hours"
     # Define the number of hours to look ahead
     n_hours = 24
-    
+
     path = "/mnt/data/flare_labels/fl2cme_vconf.csv"
 
     df = pd.read_csv(path)
@@ -77,7 +77,6 @@ if __name__ == "__main__":
         flarelabel_timeseries["flareclass"] = 0
         flarelabel_timeseries["flareclass_category"] = 0
 
-
         # Populate the flareclass and flareclass_category columns
         for i, row in df.iterrows():
             # Create a mask for the time range of the flare
@@ -88,38 +87,53 @@ if __name__ == "__main__":
             # Assign the flare class to the flarelabel_timeseries DataFrame
             flarelabel_timeseries.loc[mask, "flareclass"] = row["goes_class"]
 
-        
         # Assign flare class category based on the first letter of the flare class (C=1, M=2, X=3)
-        flarelabel_timeseries["flareclass_category"] = flarelabel_timeseries["flareclass"].apply(
-            lambda x: 1 if str(x).startswith("C") else (2 if str(x).startswith("M") else (3 if str(x).startswith("X") else 0))
+        flarelabel_timeseries["flareclass_category"] = flarelabel_timeseries[
+            "flareclass"
+        ].apply(
+            lambda x: (
+                1
+                if str(x).startswith("C")
+                else (
+                    2
+                    if str(x).startswith("M")
+                    else (3 if str(x).startswith("X") else 0)
+                )
+            )
         )
 
-        
         n_intervals = n_hours * 60 // 12  # Number of 12-minute intervals in n hours
 
         # Compute the maximum value of the next n hours for each timestamp and replace the original column
-        flarelabel_timeseries["flareclass_category"] = flarelabel_timeseries["flareclass_category"].rolling(
-            window=n_intervals, min_periods=1
-        ).max().shift(-n_intervals)
+        flarelabel_timeseries["flareclass_category"] = (
+            flarelabel_timeseries["flareclass_category"]
+            .rolling(window=n_intervals, min_periods=1)
+            .max()
+            .shift(-n_intervals)
+        )
 
         # Drop the last rows where the next n hours cannot be calculated
         flarelabel_timeseries.dropna(subset=["flareclass_category"], inplace=True)
 
         # Calculate percentage of each class category
         total_rows = len(flarelabel_timeseries)
-        percentage_C = (flarelabel_timeseries["flareclass_category"] == 1).sum() / total_rows * 100
-        percentage_M = (flarelabel_timeseries["flareclass_category"] == 2).sum() / total_rows * 100
-        percentage_X = (flarelabel_timeseries["flareclass_category"] == 3).sum() / total_rows * 100
+        percentage_C = (
+            (flarelabel_timeseries["flareclass_category"] == 1).sum() / total_rows * 100
+        )
+        percentage_M = (
+            (flarelabel_timeseries["flareclass_category"] == 2).sum() / total_rows * 100
+        )
+        percentage_X = (
+            (flarelabel_timeseries["flareclass_category"] == 3).sum() / total_rows * 100
+        )
 
         print(f"Percentage of C-class flares: {percentage_C:.2f}%")
         print(f"Percentage of M-class flares: {percentage_M:.2f}%")
         print(f"Percentage of X-class flares: {percentage_X:.2f}%")
 
-
-        flarelabel_timeseries.to_csv(f"/mnt/data/flare_labels/flarelabel_timeseries_{n_hours}hourmax.csv")
-
-
-
+        flarelabel_timeseries.to_csv(
+            f"/mnt/data/flare_labels/flarelabel_timeseries_{n_hours}hourmax.csv"
+        )
 
     if mode == "simple_binary_labels":
         """
@@ -179,7 +193,7 @@ if __name__ == "__main__":
         flarelabel_timeseries.to_csv(
             "/home/hannahruedisser/2024-ESL-Vigil/tests/test_data/flarelabel_timeseries.csv"
         )
-        
+
         print(flarelabel_timeseries)
 
     if mode == "expanded_binary_labels":
