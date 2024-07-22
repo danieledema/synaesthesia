@@ -187,7 +187,7 @@ class MultiSignalDataset(DatasetBase):
 
         data_dict = {}
         for i, ds in enumerate(self.single_signal_datasets):
-            data_dict[f"{ds.id}"] = ds.get_data(ds.get_data(data_slice[f"dataset_{i}"]))
+            data_dict[f"{ds.id}"] = ds.get_data(data_slice[f"dataset_{i}"])
 
         return data_dict
 

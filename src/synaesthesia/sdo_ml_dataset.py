@@ -40,9 +40,9 @@ class SDOMLDataset(DatasetBase):
             if label in self.labels:
                 self.data[timestamp][label] = file
 
-        for timestamp in self.data.keys():
-            if len(self.data[timestamp]) != len(self.labels):
-                del self.data[timestamp]
+        #        for timestamp in self.data.keys():
+        #            if len(self.data[timestamp]) != len(self.labels):
+        #                del self.data[timestamp]
 
         self._timestamps = list(self.data.keys())
 
@@ -50,7 +50,10 @@ class SDOMLDataset(DatasetBase):
         return len(self.data)
 
     def get_data(self, idx) -> dict[str, Any]:
-        data = {l: np.load(f) for l, f in self.data[self.get_timestamp(idx)].items()}
+        data = {
+            l: np.load(f, allow_pickle=True)
+            for l, f in self.data[self.get_timestamp(idx)].items()
+        }
         return data
 
     def get_timestamp(self, idx):
