@@ -83,12 +83,8 @@ if __name__ == "__main__":
         flarelabel_timeseries["flareclass_category"] = flarelabel_timeseries[
             "flareclass"
         ].apply(
-            lambda x: (
-                1
-                if str(x).startswith("M") or str(x).startswith("X")
-                else 0)
-                )
-    
+            lambda x: (1 if str(x).startswith("M") or str(x).startswith("X") else 0)
+        )
 
         n_intervals = n_hours * 60 // 12  # Number of 12-minute intervals in n hours
 
@@ -114,8 +110,6 @@ if __name__ == "__main__":
         flarelabel_timeseries.to_csv(
             f"/mnt/data/flare_labels/flarelabel_timeseries_binary_{n_hours}hourmax.csv"
         )
-
-
 
     if mode == "max_n_hours":
         """

@@ -40,7 +40,7 @@ class SequentialDataset(DatasetBase):
         if self.version == "1D":
             if self.n_samples > 1:
                 print(f"1D version - Taking max of next {n_samples} samples!")
-                
+
     @property
     def idxs(self) -> list[int]:
         return self._idxs
