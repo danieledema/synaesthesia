@@ -40,6 +40,10 @@ class SDOMLDataset(DatasetBase):
             if label in self.labels:
                 self.data[timestamp][label] = file
 
+        for timestamp in self.data.keys():
+            if len(self.data[timestamp]) != len(self.labels):
+                del self.data[timestamp]
+
         self._timestamps = list(self.data.keys())
 
     def __len__(self):
