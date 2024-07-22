@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta
 from typing import List
 
-import pandas as pd
-
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 
 from .abstract_dataset import DatasetBase
@@ -184,10 +183,11 @@ class MultiSignalDataset(DatasetBase):
         Returns:
             dict: Dictionary containing data from all datasets at the specified timestamp.
         """
-        timestamp = self.timestamps[idx]
+        data_slice = self.timestamp_df.iloc[idx]
+
         data_dict = {}
         for i, ds in enumerate(self.single_signal_datasets):
-            data_dict[f"{ds.id}"] = ds.get_data(ds.get_timestamp_idx(timestamp))
+            data_dict[f"{ds.id}"] = ds.get_data(ds.get_data(data_slice[f"dataset_{i}"]))
 
         return data_dict
 
