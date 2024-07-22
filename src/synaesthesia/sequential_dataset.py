@@ -35,10 +35,12 @@ class SequentialDataset(DatasetBase):
         else:
             raise ValueError("direction must be either 'future' or 'past'")
 
+        self._idxs = self.make_idxs()
+
         if self.version == "1D":
             if self.n_samples > 1:
                 print(f"1D version - Taking max of next {n_samples} samples!")
-        self._idxs = self.make_idxs()
+                self._flare_classes = self.calculate_flare_classes()
 
     @property
     def idxs(self) -> list[int]:
@@ -63,7 +65,7 @@ class SequentialDataset(DatasetBase):
     def timestamps(self) -> list[int]:
         t = self.dataset.timestamps
         return [t[i] for i in self.idxs]
-
+    
     def get_data(self, idx) -> dict[str, Any]:
 
         if idx >= len(self):
