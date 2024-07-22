@@ -40,8 +40,7 @@ class SequentialDataset(DatasetBase):
         if self.version == "1D":
             if self.n_samples > 1:
                 print(f"1D version - Taking max of next {n_samples} samples!")
-                self._flare_classes = self.calculate_flare_classes()
-
+                
     @property
     def idxs(self) -> list[int]:
         return self._idxs
