@@ -22,7 +22,7 @@ class SDOMLDataset(DatasetBase):
         self.wavelengths = wavelengths
 
         self.labels = self.components + self.wavelengths
-        print
+        print(f"training on the following channels: {self.labels}")
 
         data_folder = Path(data_folder)
         files = list(data_folder.glob("**/*.npy"))
