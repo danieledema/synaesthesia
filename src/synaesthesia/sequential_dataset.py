@@ -35,10 +35,11 @@ class SequentialDataset(DatasetBase):
         else:
             raise ValueError("direction must be either 'future' or 'past'")
 
+        self._idxs = self.make_idxs()
+
         if self.version == "1D":
             if self.n_samples > 1:
                 print(f"1D version - Taking max of next {n_samples} samples!")
-        self._idxs = self.make_idxs()
 
     @property
     def idxs(self) -> list[int]:
@@ -55,17 +56,16 @@ class SequentialDataset(DatasetBase):
             if all(0 <= idx < total_length for idx in idxs):
                 indices.append(i)
         return indices
-
+    
     def __len__(self) -> int:
         return len(self.idxs)
-
+    
     @property
     def timestamps(self) -> list[int]:
         t = self.dataset.timestamps
         return [t[i] for i in self.idxs]
 
     def get_data(self, idx) -> dict[str, Any]:
-
         if idx >= len(self):
             raise IndexError(
                 f"Index {idx} out of range for dataset of length {len(self)}"

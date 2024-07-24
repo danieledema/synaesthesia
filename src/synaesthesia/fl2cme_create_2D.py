@@ -6,42 +6,14 @@ import pandas as pd
 if __name__ == "__main__":
     """
     This script is used to create labels from the fl2cme_vconf.csv file.
-    This should eventually create a dataframe saved as csv file with the
-    following columns:
-
-    TO DO
-
-    Index:
-    Pandas datetime index for the whole range of the catalog. Make sure it
-    has the same cadence as the data (12 minutes). Make sure to correctly
-    interpolate all values for the whole range of dates!
-
-
-    Possible target variables:
-
-    - flareclass:
-    A value between 0 and 3, where 0 is no flare, 1 is C class, 2 is M class,
-    and 3 is X class. This is a possible target variable we could predict.
-
-    - flare_timeline:
-    Alternative way of predicting a flare. This is a numerical value that
-    represents the time until the next flare in multiples of the cadence.
-    This could be a regression target.
-
-    - CME_associated:
-    A boolean value indicating if there is a flare with an associated CME.
-    Think about how to deal with different levels of cme_valid_confidence.
-
-    - CME parameters such as cme_vel, cme_width, ...
-
-    - think about other possible target variables
     """
     # mode = "simple_binary_labels"
-    mode = "binary_max_1_hour_next_n_hours"
+    mode = "binary_max_m_hour_next_n_hours"
     # Define the number of hours to look ahead
+    m_hour = 1
     n_hours = 24
 
-    path = "/mnt/data/flare_labels/fl2cme_vconf.csv"
+    path = ".../labels/fl2cme_vconf.csv"
 
     df = pd.read_csv(path)
 
@@ -63,7 +35,7 @@ if __name__ == "__main__":
     time_index = pd.date_range(start=min_time_adjusted, end=max_time, freq="12min")
 
 
-    if mode == "binary_max_n_hours":
+    if mode == "binary_max_m_hour_next_n_hours":
         # Initialize the flarelabel_timeseries DataFrame
         flarelabel_timeseries = pd.DataFrame(
             index=time_index, columns=["flareclass", "flareclass_category"]
