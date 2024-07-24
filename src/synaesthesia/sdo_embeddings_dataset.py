@@ -8,7 +8,7 @@ from .abstract_dataset import DatasetBase
 from .constants import ALL_COMPONENTS, ALL_WAVELENGTHS
 from .utils import convert_to_datetime
 
-class SDOMLDataset(DatasetBase):
+class SDOEmbeddingsDataset(DatasetBase):
     def __init__(
         self,
         data_folder: Path | str,
@@ -24,7 +24,7 @@ class SDOMLDataset(DatasetBase):
         print(f"training on the following channels: {self.labels}")
 
         data_folder = Path(data_folder)
-        files = list(data_folder.glob("**/*.npy"))
+        files = list(data_folder.glob("**/*_all.pt"))
 
         self.data = OrderedDict()
         for file in files:
@@ -47,7 +47,7 @@ class SDOMLDataset(DatasetBase):
 
     def get_data(self, idx) -> dict[str, Any]:
         data = {
-            l: np.load(f, allow_pickle=True)
+            l: torch.load(f)
             for l, f in self.data[self.get_timestamp(idx)].items()
         }
         return data
