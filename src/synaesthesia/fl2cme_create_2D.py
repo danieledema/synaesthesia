@@ -37,11 +37,11 @@ if __name__ == "__main__":
 
     if mode == "binary_max_m_hour_next_n_hours":
         # Initialize the flarelabel_timeseries DataFrame
-        flarelabel_timeseries = pd.DataFrame(
-            index=time_index, columns=["flareclass", "flareclass_category"]
-        )
+        columns = ["flareclass", "flareclass_category"] + [f"+{i}h" for i in range(1, n_hours + 1)]
+        flarelabel_timeseries = pd.DataFrame(index=time_index, columns=columns)
         flarelabel_timeseries["flareclass"] = 0
         flarelabel_timeseries["flareclass_category"] = 0
+
 
         # Populate the flareclass and flareclass_category columns
         for i, row in df.iterrows():
@@ -60,29 +60,31 @@ if __name__ == "__main__":
             lambda x: (1 if str(x).startswith("M") or str(x).startswith("X") else 0)
         )
 
-        n_intervals = n_hours * 60 // 12  # Number of 12-minute intervals in n hours
+        # Fill in the hourly labels
+        for h in range(1, n_hours + 1):
+            # Calculate the number of 12-minute intervals in `h` hours
+            h_intervals = h * 60 // 12
+            # For each timestamp, check if there's a flare within the next `h` hours
+            flarelabel_timeseries[f"+{h}h"] = (
+                flarelabel_timeseries["flareclass_category"]
+                .rolling(window=h_intervals, min_periods=1)
+                .max()
+                .shift(-h_intervals)
+            )
 
-        # Compute the maximum value of the next n hours for each timestamp and replace the original column
-        flarelabel_timeseries["flareclass_category"] = (
-            flarelabel_timeseries["flareclass_category"]
-            .rolling(window=n_intervals, min_periods=1)
-            .max()
-            .shift(-n_intervals)
-        )
+        # Drop the last rows where the future hours cannot be calculated
+        flarelabel_timeseries.dropna(subset=[f"+{h}h" for h in range(1, n_hours + 1)], inplace=True)
 
-        # Drop the last rows where the next n hours cannot be calculated
-        flarelabel_timeseries.dropna(subset=["flareclass_category"], inplace=True)
-
-        # Calculate percentage of each class category
+        # Calculate percentage of each class category for +1h as an example
         total_rows = len(flarelabel_timeseries)
         percentage_C = (
-            (flarelabel_timeseries["flareclass_category"] == 1).sum() / total_rows * 100
+            (flarelabel_timeseries["+1h"] == 1).sum() / total_rows * 100
         )
 
-        print(f"Percentage of M/X-class flares: {percentage_C:.2f}%")
+        print(f"Percentage of M/X-class flares in the next hour: {percentage_C:.2f}%")
 
         flarelabel_timeseries.to_csv(
-            f"/mnt/data/flare_labels/flarelabel_timeseries_binary_{n_hours}hourmax.csv"
+            f"labels/flarelabel_timeseries_hourly_{n_hours}hours.csv"
         )
 
 
