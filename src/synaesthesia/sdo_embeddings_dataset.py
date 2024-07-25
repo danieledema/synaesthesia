@@ -37,6 +37,8 @@ class SDOEmbeddingsDataset(DatasetBase):
             if timestamp not in self.data:
                 self.data[timestamp] = {}
 
+            breakpoint()
+
             if label in self.labels:
                 self.data[timestamp][label] = file
 

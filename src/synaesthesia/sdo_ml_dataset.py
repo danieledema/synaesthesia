@@ -40,7 +40,7 @@ class SDOMLDataset(DatasetBase):
 
             if label in self.labels:
                 self.data[timestamp][label] = file
-
+                
         self._timestamps = list(self.data.keys())
 
     def __len__(self):
