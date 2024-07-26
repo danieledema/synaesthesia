@@ -2,6 +2,7 @@ from collections import OrderedDict
 from pathlib import Path
 from typing import Any
 
+import torch
 import numpy as np
 
 from .abstract_dataset import DatasetBase
@@ -54,10 +55,10 @@ class SDOEmbeddingsDataset(DatasetBase):
 
     def get_timestamp(self, idx):
         return self._timestamps[idx]
-
+    
     def get_timestamp_idx(self, timestamp):
         return self._timestamps.index(timestamp)
-
+    
     @property
     def sensor_ids(self) -> list[str]:
         return ["AIA", "HMI"]
