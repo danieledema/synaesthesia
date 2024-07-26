@@ -47,9 +47,9 @@ class SDOEmbeddingsDataset(DatasetBase):
         return len(self.data)
 
     def get_data(self, idx) -> dict[str, Any]:
-        breakpoint()
+
         data = {
-            l: torch.load(f)
+            l: torch.load(f).detach()
             for l, f in self.data[self.get_timestamp(idx)].items()
         }
         return data
