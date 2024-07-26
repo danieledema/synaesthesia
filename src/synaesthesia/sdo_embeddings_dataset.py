@@ -24,7 +24,7 @@ class SDOEmbeddingsDataset(DatasetBase):
         print(f"training on the following channels: {self.labels}")
 
         data_folder = Path(data_folder)
-        files = list(data_folder.glob("**/*_all.pt"))
+        files = list(data_folder.glob("**/*.pt"))
 
         self.data = OrderedDict()
         for file in files:
@@ -36,8 +36,6 @@ class SDOEmbeddingsDataset(DatasetBase):
 
             if timestamp not in self.data:
                 self.data[timestamp] = {}
-
-            breakpoint()
 
             if label in self.labels:
                 self.data[timestamp][label] = file
