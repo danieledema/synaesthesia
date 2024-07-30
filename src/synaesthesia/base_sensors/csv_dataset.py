@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pandas
 
+from ..abstract.conversion import convert_to_timestamp
 from ..abstract.dataset_base import DatasetBase
 
 
@@ -11,6 +12,9 @@ class CsvDataset(DatasetBase):
 
         self.path = Path(path)
         self.data = pandas.read_csv(self.path)
+        self.data["timestamp"] = (
+            self.data["timestamp"].apply(convert_to_timestamp).apply(int)
+        )
 
     def __len__(self):
         return len(self.data)
