@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 
 from .dataset_base import DatasetBase
 
@@ -10,54 +10,31 @@ class SequentialDataset(DatasetBase):
         n_samples=2,
         skip_n=0,
         stride=1,
-        direction="future",
-        delay_start=0,
+        timestamp_idx: Literal["first", "last"] = "first",
         return_timestamps=False,
     ):
         self.dataset = dataset
         self.n_samples = n_samples
         self.skip_n = skip_n
         self.stride = stride
-        self.direction = direction
-        self.delay_start = delay_start
+        self.timestamp_idx = timestamp_idx
         self.return_timestamps = return_timestamps
 
-        idx_format = [
-            self.delay_start + i * (1 + self.skip_n) for i in range(n_samples)
-        ]
-
-        if direction == "future":
-            self.idx_format = tuple(idx_format)
-        elif direction == "past":
-            self.idx_format = tuple([-1 * i for i in idx_format[::-1]])
-        else:
-            raise ValueError("direction must be either 'future' or 'past'")
-
-        self._idxs = self.make_idxs()
+        self.idx_format = tuple(
+            [0] + [i * (1 + self.skip_n) for i in range(1, n_samples)]
+        )
 
     @property
     def idxs(self) -> list[int]:
-        return self._idxs
-
-    def make_idxs(self):
-        total_length = len(self.dataset)
-        indices = []
-        for i in range(total_length):
-            if self.direction == "future":
-                idxs = [i + offset for offset in self.idx_format]
-            else:  # direction == "past"
-                idxs = [i + offset for offset in self.idx_format]
-            if all(0 <= idx < total_length for idx in idxs):
-                indices.append(i)
-        return indices
+        return [i * self.stride for i in range(len(self.dataset) // self.stride)]
 
     def __len__(self) -> int:
-        return len(self.idxs)
+        len_samples = self.idx_format[-1] + 1
+        return (len(self.dataset) - len_samples) // self.stride + 1
 
     @property
     def timestamps(self) -> list[int]:
-        t = self.dataset.timestamps
-        return [t[i] for i in self.idxs]
+        return [self.dataset.get_timestamp(i) for i in self.idxs]
 
     def get_data(self, idx) -> dict[str, Any]:
 
@@ -66,7 +43,7 @@ class SequentialDataset(DatasetBase):
                 f"Index {idx} out of range for dataset of length {len(self)}"
             )
 
-        original_idx = self.idxs[idx]
+        original_idx = idx // self.stride
         seq_idxs = [original_idx + f for f in self.idx_format]
 
         data_list = [self.dataset.get_data(i) for i in seq_idxs]
@@ -100,7 +77,11 @@ class SequentialDataset(DatasetBase):
         return f"Sequential - {len(self.idxs)} samples\n{inner_repr}"
 
     def get_timestamp(self, idx):
-        return self.timestamps[idx]
+        original_idx = idx // self.stride
+        if self.timestamp_idx == "first":
+            return self.dataset.get_timestamp(original_idx)
+        else:
+            return self.timestamps[original_idx + self.idx_format[-1]]
 
     def get_timestamp_idx(self, timestamp):
         return self.timestamps.index(timestamp)
