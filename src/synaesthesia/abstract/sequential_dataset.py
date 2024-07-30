@@ -82,7 +82,7 @@ class SequentialDataset(DatasetBase):
         if self.timestamp_idx == "first":
             return self.dataset.get_timestamp(original_idx)
         else:
-            return self.timestamps[original_idx + self.idx_format[-1]]
+            return self.dataset.get_timestamp(original_idx + self.idx_format[-1])
 
     def get_timestamp_idx(self, timestamp):
         return self.timestamps.index(timestamp)
