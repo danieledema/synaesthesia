@@ -47,8 +47,9 @@ class SequentialDataset(DatasetBase):
 
     def make_idxs(self):
         total_length = len(self.dataset)
+        step = 1 + self.skip_n 
         indices = []
-        for i in range(total_length):
+        for i in range(0, total_length, step):
             if self.direction == "future":
                 idxs = [i + offset for offset in self.idx_format]
             else:  # direction == "past"
