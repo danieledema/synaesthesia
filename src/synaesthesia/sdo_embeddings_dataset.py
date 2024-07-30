@@ -30,6 +30,8 @@ class SDOEmbeddingsDataset(DatasetBase):
         print(f"Loading data from {data_folder}")
         files = list(data_folder.glob("**/*.pt"))
 
+    ###
+
         self.data = OrderedDict()
         for file in tqdm(files):
             filename = file.stem
@@ -55,7 +57,6 @@ class SDOEmbeddingsDataset(DatasetBase):
             l: torch.load(f).detach()
             for l, f in self.data[self.get_timestamp(idx)].items()
         }
-        breakpoint()
         return data
 
     def get_timestamp(self, idx):
