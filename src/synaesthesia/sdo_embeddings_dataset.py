@@ -9,6 +9,8 @@ from .abstract_dataset import DatasetBase
 from .constants import ALL_COMPONENTS, ALL_WAVELENGTHS
 from .utils import convert_to_datetime
 
+from tqdm import tqdm
+
 class SDOEmbeddingsDataset(DatasetBase):
     def __init__(
         self,
@@ -25,10 +27,11 @@ class SDOEmbeddingsDataset(DatasetBase):
         print(f"training on the following channels: {self.labels}")
 
         data_folder = Path(data_folder)
+        print(f"Loading data from {data_folder}")
         files = list(data_folder.glob("**/*.pt"))
 
         self.data = OrderedDict()
-        for file in files:
+        for file in tqdm(files):
             filename = file.stem
             timestamp, label = filename.split("_")
 
@@ -52,6 +55,7 @@ class SDOEmbeddingsDataset(DatasetBase):
             l: torch.load(f).detach()
             for l, f in self.data[self.get_timestamp(idx)].items()
         }
+        breakpoint()
         return data
 
     def get_timestamp(self, idx):
