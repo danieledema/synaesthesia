@@ -43,8 +43,9 @@ class SequentialDataset(DatasetBase):
                 f"Index {idx} out of range for dataset of length {len(self)}"
             )
 
-        original_idx = idx // self.stride
+        original_idx = idx * self.stride
         seq_idxs = [original_idx + f for f in self.idx_format]
+        print(seq_idxs)
 
         data_list = [self.dataset.get_data(i) for i in seq_idxs]
         data = {d: [] for d in data_list[0]}
@@ -77,7 +78,7 @@ class SequentialDataset(DatasetBase):
         return f"Sequential - {len(self.idxs)} samples\n{inner_repr}"
 
     def get_timestamp(self, idx):
-        original_idx = idx // self.stride
+        original_idx = idx * self.stride
         if self.timestamp_idx == "first":
             return self.dataset.get_timestamp(original_idx)
         else:
