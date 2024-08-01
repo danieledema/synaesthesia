@@ -1,3 +1,7 @@
+from pathlib import Path
+
+from torch.utils.data import WeightedRandomSampler
+
 from .abstract.dataset_base import DatasetBase
 
 
@@ -14,3 +18,23 @@ def calculate_class_weights(dataset: DatasetBase, class_label: str, num_classes:
     sample_weights = [class_weights[label] for label in sample_weights]
 
     return sample_weights, class_weights
+
+
+class WeightedSamplerFromFile(WeightedRandomSampler):
+    def __init__(self, filepath: str | Path, num_samples: int):
+        sample_weights = self.read_sample_weights(filepath)
+
+        super(WeightedSamplerFromFile, self).__init__(
+            weights=sample_weights, num_samples=num_samples
+        )
+
+    def read_sample_weights(self, filepath: str | Path):
+        with open(filepath, "r") as file:
+            sample_weights = [float(line.strip()) for line in file]
+
+        return sample_weights
+
+    def write_sample_weights(self, filepath: str | Path, sample_weights):
+        with open(filepath, "w") as file:
+            for weight in sample_weights:
+                file.write(f"{weight}\n")
