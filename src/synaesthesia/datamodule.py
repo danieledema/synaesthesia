@@ -87,6 +87,24 @@ class ParsedDataModule(LightningDataModule):
         with open(test_path, "wb") as path:
             pickle.dump(self.test_dataset, path)
 
+        with open(root_path / "train_sampler.pkl", "wb") as path:
+            pickle.dump(self.train_sampler, path)
+
+        with open(root_path / "val_sampler.pkl", "wb") as path:
+            pickle.dump(self.val_sampler, path)
+
+        with open(root_path / "test_sampler.pkl", "wb") as path:
+            pickle.dump(self.test_sampler, path)
+
+        with open(root_path / "train_collate_fn.pkl", "wb") as path:
+            pickle.dump(self.train_collate_fn, path)
+
+        with open(root_path / "val_collate_fn.pkl", "wb") as path:
+            pickle.dump(self.val_collate_fn, path)
+
+        with open(root_path / "test_collate_fn.pkl", "wb") as path:
+            pickle.dump(self.test_collate_fn, path)
+
         config_cache_path = root_path / "config.pkl"
         with open(config_cache_path, "wb") as path:
             pickle.dump(current_cfg, path)
@@ -108,8 +126,36 @@ class ParsedDataModule(LightningDataModule):
         with open(test_path, "rb") as path:
             test_dataset = pickle.load(path)
 
+        with open(root_path / "train_sampler.pkl", "rb") as path:
+            train_sampler = pickle.load(path)
+
+        with open(root_path / "val_sampler.pkl", "rb") as path:
+            val_sampler = pickle.load(path)
+
+        with open(root_path / "test_sampler.pkl", "rb") as path:
+            test_sampler = pickle.load(path)
+
+        with open(root_path / "train_collate_fn.pkl", "rb") as path:
+            train_collate_fn = pickle.load(path)
+
+        with open(root_path / "val_collate_fn.pkl", "rb") as path:
+            val_collate_fn = pickle.load(path)
+
+        with open(root_path / "test_collate_fn.pkl", "rb") as path:
+            test_collate_fn = pickle.load(path)
+
         return ParsedDataModule(
-            train_dataset, val_dataset, test_dataset, batch_size, num_workers
+            train_dataset,
+            val_dataset,
+            test_dataset,
+            batch_size,
+            num_workers,
+            train_sampler,
+            val_sampler,
+            test_sampler,
+            train_collate_fn,
+            val_collate_fn,
+            test_collate_fn,
         )
 
     @staticmethod
@@ -118,19 +164,40 @@ class ParsedDataModule(LightningDataModule):
         train_path = root_path / "train_dataset.pkl"
         val_path = root_path / "val_dataset.pkl"
         test_path = root_path / "test_dataset.pkl"
+        train_sampler_path = root_path / "train_sampler.pkl"
+        val_sampler_path = root_path / "val_sampler.pkl"
+        test_sampler_path = root_path / "test_sampler.pkl"
+        train_collate_fn_path = root_path / "train_collate_fn.pkl"
+        val_collate_fn_path = root_path / "val_collate_fn.pkl"
+        test_collate_fn_path = root_path / "test_collate_fn.pkl"
 
-        if not train_path.exists():
-            return False
-
-        if not val_path.exists():
-            return False
-
-        if not test_path.exists():
+        if (
+            not train_path.exists()
+            or not val_path.exists()
+            or not test_path.exists()
+            or not train_sampler_path.exists()
+            or not val_sampler_path.exists()
+            or not test_sampler_path.exists()
+            or not train_collate_fn_path.exists()
+            or not val_collate_fn_path.exists()
+            or not test_collate_fn_path.exists()
+        ):
             return False
 
         with open(root_path / "config.pkl", "rb") as path:
             cached_cfg = pickle.load(path)
-            if current_cfg != cached_cfg:
+
+            if (
+                current_cfg["train_dataset"] != cached_cfg["train_dataset"]
+                or current_cfg["val_dataset"] != cached_cfg["val_dataset"]
+                or current_cfg["test_dataset"] != cached_cfg["test_dataset"]
+                or current_cfg["train_sampler"] != cached_cfg["train_sampler"]
+                or current_cfg["val_sampler"] != cached_cfg["val_sampler"]
+                or current_cfg["test_sampler"] != cached_cfg["test_sampler"]
+                or current_cfg["train_collate_fn"] != cached_cfg["train_collate_fn"]
+                or current_cfg["val_collate_fn"] != cached_cfg["val_collate_fn"]
+                or current_cfg["test_collate_fn"] != cached_cfg["test_collate_fn"]
+            ):
                 return False
 
         return True
