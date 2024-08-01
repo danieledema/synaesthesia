@@ -1,9 +1,6 @@
-from datetime import datetime
 from typing import List
 
-import numpy as np
-import pandas as pd
-from tqdm import tqdm
+from loguru import logger
 
 from .dataset_base import DatasetBase
 
@@ -37,7 +34,10 @@ class MultiSignalDataset(DatasetBase):
         self.time_cut = time_cut
 
         # Create a DataFrame to store timestamps and corresponding indices
+        logger.info("Initializing timestamps...")
         self._timestamps = self._initialize_timestamps()
+
+        logger.info("Initializing data dictionary...")
         self.data_dict = self._initialize_data_dict()
 
     def _initialize_timestamps(self) -> list[int]:
@@ -198,7 +198,7 @@ class MultiSignalDataset(DatasetBase):
 
         return data_dict
 
-    def get_timestamp(self, idx: int) -> pd.Timestamp:
+    def get_timestamp(self, idx: int) -> int:
         """
         Retrieves the timestamp at the specified index.
 
@@ -206,11 +206,11 @@ class MultiSignalDataset(DatasetBase):
             idx (int): Index of the timestamp.
 
         Returns:
-            pd.Timestamp: Timestamp at the specified index.
+            int: Timestamp at the specified index.
         """
         return self.timestamps[idx]
 
-    def get_timestamp_idx(self, timestamp: pd.Timestamp) -> int:
+    def get_timestamp_idx(self, timestamp: int) -> int:
         """
         Retrieves the index of the specified timestamp.
 
