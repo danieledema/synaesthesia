@@ -35,7 +35,8 @@ class WeightedSamplerFromFile(WeightedRandomSampler):
 
         return sample_weights
 
-    def write_sample_weights(self, filepath: str | Path, sample_weights):
+    @staticmethod
+    def write_sample_weights(filepath: str | Path, sample_weights):
         with open(filepath, "w") as file:
             for weight in sample_weights:
                 file.write(f"{weight}\n")
