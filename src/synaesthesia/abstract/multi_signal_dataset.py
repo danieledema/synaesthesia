@@ -1,6 +1,7 @@
 from typing import List
 
 from loguru import logger
+from tqdm import tqdm
 
 from .dataset_base import DatasetBase
 
@@ -48,7 +49,7 @@ class MultiSignalDataset(DatasetBase):
         if self.aggregation == "all":
             merged_timestamps = self.single_signal_datasets[0].timestamps
 
-            for ds in self.single_signal_datasets[1:]:
+            for ds in tqdm(self.single_signal_datasets[1:], desc="Merging timestamps"):
                 i, j = 0, 0
 
                 timestmaps_to_merge = ds.timestamps
@@ -83,7 +84,7 @@ class MultiSignalDataset(DatasetBase):
         elif self.aggregation == "common":
             merged_timestamps = self.single_signal_datasets[0].timestamps
 
-            for ds in self.single_signal_datasets[1:]:
+            for ds in tqdm(self.single_signal_datasets[1:], desc="Merging timestamps"):
                 to_delete = []
                 for i, t in enumerate(merged_timestamps):
                     if t not in ds:
@@ -110,8 +111,8 @@ class MultiSignalDataset(DatasetBase):
         data_dict = {
             t: [None] * len(self.single_signal_datasets) for t in self.timestamps
         }
-        for i, ds in enumerate(self.single_signal_datasets):
-            for j, timestamp in enumerate(ds.timestamps):
+        for i, ds in tqdm(enumerate(self.single_signal_datasets), desc="Filling:"):
+            for j, timestamp in tqdm(enumerate(ds.timestamps), desc=f"Dataset: {i}"):
                 if timestamp in data_dict:
                     data_dict[timestamp][i] = j
 
@@ -122,13 +123,13 @@ class MultiSignalDataset(DatasetBase):
             min_common_timestamp = max(
                 [ds.get_timestamp(0) for ds in self.single_signal_datasets]
             )
-            for i in range(len(self.timestamps)):
+            for i in tqdm(range(len(self.timestamps)), desc="Filling:"):
                 if self.timestamps[i] < min_common_timestamp:
                     data_dict[self.timestamps[i + 1]] = data_dict[self.timestamps[i]]
                     del data_dict[self.timestamps[i]]
                     del self.timestamps[i]
 
-            for i, ds in enumerate(self.single_signal_datasets):
+            for i, ds in tqdm(enumerate(self.single_signal_datasets), desc="Filling:"):
                 for j, timestamp in enumerate(self.timestamps):
                     if data_dict[timestamp][i] is None:
                         data_dict[timestamp][i] = data_dict[self.timestamps[j - 1]][i]
@@ -136,7 +137,7 @@ class MultiSignalDataset(DatasetBase):
             return data_dict
 
         elif self.fill == "closest":
-            for i, ds in enumerate(self.single_signal_datasets):
+            for i, ds in tqdm(enumerate(self.single_signal_datasets), desc="Filling:"):
                 global_timestamp_idx, ds_timestamp_idx = 0, 1
 
                 while global_timestamp_idx < len(self.timestamps):

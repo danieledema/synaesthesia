@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import Any
 
+from tqdm import tqdm
+
 from ..abstract.dataset_base import DatasetBase
 
 
@@ -60,7 +62,7 @@ class EuvDataset(DatasetBase):
             self._timestamps.append(timestamp)
             last_timestamp = timestamp
 
-        for wavelength in self.wavelengths[1:]:
+        for wavelength in tqdm(self.wavelengths[1:], desc="Loading data"):
             last_timestamp_idx = 0
             for file in files:
                 timestamp, wl = self.parse_filename(file)
