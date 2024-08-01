@@ -57,22 +57,28 @@ class MultiSignalDataset(DatasetBase):
                     min(merged_timestamps[0], timestmaps_to_merge[0])
                 ]
 
-                while i < len(merged_timestamps) and j < len(timestmaps_to_merge):
+                with tqdm(
+                    total=len(merged_timestamps) + len(timestmaps_to_merge)
+                ) as pbar:
+                    while i < len(merged_timestamps) and j < len(timestmaps_to_merge):
 
-                    if tmp_merged_timestamps[-1] == merged_timestamps[i]:
-                        i += 1
-                        continue
+                        if tmp_merged_timestamps[-1] == merged_timestamps[i]:
+                            i += 1
+                            pbar.update(1)
+                            continue
 
-                    if tmp_merged_timestamps[-1] == timestmaps_to_merge[j]:
-                        j += 1
-                        continue
+                        if tmp_merged_timestamps[-1] == timestmaps_to_merge[j]:
+                            j += 1
+                            pbar.update(1)
+                            continue
 
-                    if merged_timestamps[i] < timestmaps_to_merge[j]:
-                        tmp_merged_timestamps.append(merged_timestamps[i])
-                        i += 1
-                    else:
-                        tmp_merged_timestamps.append(timestmaps_to_merge[j])
-                        j += 1
+                        if merged_timestamps[i] < timestmaps_to_merge[j]:
+                            tmp_merged_timestamps.append(merged_timestamps[i])
+                            i += 1
+                        else:
+                            tmp_merged_timestamps.append(timestmaps_to_merge[j])
+                            j += 1
+                        pbar.update(1)
 
                 # Append any remaining elements from list1 or list2
                 tmp_merged_timestamps.extend(merged_timestamps[i:])
@@ -86,7 +92,7 @@ class MultiSignalDataset(DatasetBase):
 
             for ds in tqdm(self.single_signal_datasets[1:], desc="Merging timestamps"):
                 to_delete = []
-                for i, t in enumerate(merged_timestamps):
+                for i, t in tqdm(enumerate(merged_timestamps)):
                     if t not in ds:
                         to_delete.append(i)
 
@@ -130,7 +136,7 @@ class MultiSignalDataset(DatasetBase):
                     del self.timestamps[i]
 
             for i, ds in tqdm(enumerate(self.single_signal_datasets), desc="Filling:"):
-                for j, timestamp in enumerate(self.timestamps):
+                for j, timestamp in tqdm(enumerate(self.timestamps)):
                     if data_dict[timestamp][i] is None:
                         data_dict[timestamp][i] = data_dict[self.timestamps[j - 1]][i]
 
