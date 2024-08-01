@@ -29,7 +29,7 @@ class CsvDataset(DatasetBase):
 
     @property
     def sensor_ids(self):
-        return [f"{self.id}-{col}" for col in self.data.columns if col != "timestamp"]
+        return [f"{col}" for col in self.data.columns if col != "timestamp"]
 
     def get_timestamp(self, idx):
         return self.data["timestamp"].values[idx]

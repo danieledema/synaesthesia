@@ -178,4 +178,4 @@ class EuvDataset(DatasetBase):
 
     @property
     def sensor_ids(self) -> list[str]:
-        return [f"{self.id}-{w}" for w in self.wavelengths]
+        return [f"{w}" for w in self.wavelengths]
