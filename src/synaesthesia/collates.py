@@ -5,16 +5,20 @@ from torch.utils.data.dataloader import default_collate
 
 class CollateBase:
     def __init__(
-        self, item_keys: list[str] | None = None, delete_original=False
+        self, item_keys: str | list[str] | None = None, delete_original=False
     ) -> None:
-        self.item_keys = item_keys
+        self.item_keys = (
+            item_keys
+            if type(item_keys) == list
+            else [item_keys] if item_keys is not None else None
+        )
         self.delete_original = delete_original
 
     def __call__(self, items):
         if self.item_keys is not None:
             keys = self.item_keys
         else:
-            keys = [i for i in items.keys() if i != "timestamp" or i != "idx"]
+            keys = list(items.keys())
 
         items_new = self.do_collate({key: items[key] for key in keys})
         if self.delete_original:
