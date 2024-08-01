@@ -19,7 +19,6 @@ class MultiSignalDataset(DatasetBase):
         aggregation: str = "all",
         fill: str = "none",
         time_cut: int = 60,  # in minutes
-        patch: str = "drop",
     ):
         """
         Initializes the MultiSignalDataset.
@@ -36,7 +35,6 @@ class MultiSignalDataset(DatasetBase):
         self.aggregation = aggregation
         self.fill = fill
         self.time_cut = time_cut
-        self.patch = patch
 
         # Create a DataFrame to store timestamps and corresponding indices
         self._timestamps = self._initialize_timestamps()

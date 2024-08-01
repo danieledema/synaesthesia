@@ -37,7 +37,6 @@ class SequentialDataset(DatasetBase):
         return [self.dataset.get_timestamp(i) for i in self.idxs]
 
     def get_data(self, idx) -> dict[str, Any]:
-
         if idx >= len(self):
             raise IndexError(
                 f"Index {idx} out of range for dataset of length {len(self)}"
@@ -45,7 +44,6 @@ class SequentialDataset(DatasetBase):
 
         original_idx = idx * self.stride
         seq_idxs = [original_idx + f for f in self.idx_format]
-        print(seq_idxs)
 
         data_list = [self.dataset.get_data(i) for i in seq_idxs]
         data = {d: [] for d in data_list[0]}
