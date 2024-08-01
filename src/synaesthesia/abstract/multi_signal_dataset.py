@@ -147,6 +147,7 @@ class MultiSignalDataset(DatasetBase):
                     while (
                         ds.get_timestamp(ds_timestamp_idx - 1) < timestamps_to_fill
                         and ds.get_timestamp(ds_timestamp_idx) < timestamps_to_fill
+                        and ds_timestamp_idx < len(ds) - 1
                     ):
                         ds_timestamp_idx += 1
 
