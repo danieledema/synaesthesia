@@ -15,7 +15,8 @@ def calculate_class_weights(dataset: DatasetBase, class_label: str, num_classes:
 
         sample_weights[i] = data[class_label]
 
-    sample_weights = [class_weights[label] for label in sample_weights]
+    max_class_weight = max(class_weights)
+    class_weights = [max_class_weight / class_weight for class_weight in class_weights]
 
     return sample_weights, class_weights
 
