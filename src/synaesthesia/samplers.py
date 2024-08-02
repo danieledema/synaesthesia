@@ -1,20 +1,19 @@
 from pathlib import Path
 
-from torch.utils.data import WeightedRandomSampler
+from torch.utils.data import DataLoader, WeightedRandomSampler
 from tqdm import tqdm
 
-from .abstract.dataset_base import DatasetBase
 
-
-def calculate_class_weights(dataset: DatasetBase, class_label: str, num_classes: int):
+def calculate_class_weights(dataloader: DataLoader, class_label: str, num_classes: int):
     class_weights = [0] * num_classes
 
-    sample_weights = [0 for _ in range(len(dataset))]
+    sample_weights = [0 for _ in range(len(dataloader))]
 
-    for i, data in tqdm(enumerate(dataset), total=len(dataset)):
+    for data in tqdm(dataloader):
         class_weights[data[class_label]] += 1
 
-        sample_weights[i] = data[class_label]
+        for i in data["idx"]:
+            sample_weights[i] = data[class_label][i]
 
     max_class_weight = max(class_weights)
     class_weights = [max_class_weight / class_weight for class_weight in class_weights]
