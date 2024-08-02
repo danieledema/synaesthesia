@@ -1,12 +1,7 @@
-import numpy as np
 from tqdm import tqdm
 
 from .conversion import convert_to_timestamp
 from .dataset_base import DatasetBase
-
-
-def parse_custom_datetime(dt_str):
-    return f"{dt_str[:4]}-{dt_str[4:6]}-{dt_str[6:8]}T{dt_str[9:11]}:{dt_str[11:13]}:{dt_str[13:15]}"
 
 
 class BoundaryFilteredDataset(DatasetBase):
@@ -25,8 +20,8 @@ class BoundaryFilteredDataset(DatasetBase):
         # Convert boundaries to numpy.datetime64 using the helper function
         boundaries_dt = [
             (
-                np.datetime64(parse_custom_datetime(b[0])),
-                np.datetime64(parse_custom_datetime(b[1])),
+                convert_to_timestamp(b[0]),
+                convert_to_timestamp(b[1]),
             )
             for b in self.boundaries
         ]
