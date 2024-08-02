@@ -29,6 +29,7 @@ class EuvDataset(DatasetBase):
         remove_incomplete: bool = True,
         remove_duplicates: bool = True,
         duplicate_threshold: int = 10,
+        already_aligned: bool = False,
     ):
         """
         Initializes the EUV dataset.
@@ -69,6 +70,15 @@ class EuvDataset(DatasetBase):
             self.wavelengths[1:],
             desc=f"Loading data for wavelengths {self.wavelengths}",
         ):
+            if already_aligned:
+                for timestamp in self._timestamps:
+                    filename = self.filename_from_timestamp(
+                        timestamp, wavelength, self.folder_path
+                    )
+                    self.data_dict[timestamp][wavelength] = filename
+
+                continue
+
             last_timestamp_idx = 0
             for file in tqdm(files):
                 timestamp, wl = self.parse_filename(file)
@@ -145,6 +155,11 @@ class EuvDataset(DatasetBase):
         return data
 
     def read_data(self, file_path: Path) -> Any:
+        raise NotImplementedError
+
+    def filename_from_timestamp(
+        self, timestamp: int, wavelength: str, folder_path: Path
+    ) -> Path:
         raise NotImplementedError
 
     def parse_filename(self, filename) -> tuple[int, str]:
