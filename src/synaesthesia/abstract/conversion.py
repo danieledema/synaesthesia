@@ -1,9 +1,8 @@
 from datetime import datetime
 
 
-def convert_to_timestamp(timestamp) -> int:
-    """Converts a timestamp in the format of 'YYYYMMDDTHHMMSSffffff' to a unix timestamp in seconds."""
-    format = "%Y%m%dT%H%M%S%f"
+def convert_to_timestamp(timestamp, format="%Y%m%dT%H%M%S%f") -> int:
+    """Converts a timestamp to a unix timestamp in seconds."""
     date = datetime.strptime(timestamp, format)
     return int(date.timestamp())
 

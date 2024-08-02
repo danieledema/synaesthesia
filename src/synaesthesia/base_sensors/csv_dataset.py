@@ -7,7 +7,7 @@ from ..abstract.dataset_base import DatasetBase
 
 
 class CsvDataset(DatasetBase):
-    def __init__(self, path):
+    def __init__(self, path: str | Path, cols: list[str] | str | None = None):
         super().__init__()
 
         self.path = Path(path)
@@ -16,13 +16,17 @@ class CsvDataset(DatasetBase):
             self.data["timestamp"].apply(convert_to_timestamp).apply(int)
         )
 
+        self.cols = (
+            cols if isinstance(cols, list) else [cols] if cols else self.data.columns
+        )
+
     def __len__(self):
         return len(self.data)
 
     def get_data(self, idx):
         data = {
             f"{col}": self.data[col].values[idx]
-            for col in self.data.columns
+            for col in self.cols
             if col != "timestamp"
         }
         return data
