@@ -10,9 +10,9 @@ class CollateBase:
     def __init__(
         self, item_keys: str | list[str] = ".*", delete_original=False
     ) -> None:
-        self.item_keys: list[str] = (
-            item_keys if isinstance(item_keys, list) else [item_keys]
-        )
+        self.item_keys = item_keys if isinstance(item_keys, list) else [item_keys]
+        self.item_keys = [re.compile(key) for key in self.item_keys]
+
         self.delete_original = delete_original
 
         self.item_keys_cached = []
