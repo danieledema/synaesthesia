@@ -1,3 +1,6 @@
+import re
+from typing import Any
+
 import kornia
 import torch
 from torch.utils.data.dataloader import default_collate
@@ -5,20 +8,24 @@ from torch.utils.data.dataloader import default_collate
 
 class CollateBase:
     def __init__(
-        self, item_keys: str | list[str] | None = None, delete_original=False
+        self, item_keys: str | list[str] = ".*", delete_original=False
     ) -> None:
-        self.item_keys = (
-            item_keys
-            if type(item_keys) == list
-            else [item_keys] if item_keys is not None else None
+        self.item_keys: list[str] = (
+            item_keys if isinstance(item_keys, list) else [item_keys]
         )
         self.delete_original = delete_original
 
-    def __call__(self, items):
-        if self.item_keys is not None:
-            keys = self.item_keys
-        else:
-            keys = list(items.keys())
+        self.item_keys_cached = []
+
+    def __call__(self, items_list: list[dict[str, Any]]):
+
+        assert len(items_list) > 0, "items_list must have at least one item"
+
+        items = {
+            key: [item[key] for item in items_list] for key in items_list[0].keys()
+        }
+
+        keys = self.match_keys(list(items.keys()))
 
         items_new = self.do_collate({key: items[key] for key in keys})
         if self.delete_original:
@@ -30,7 +37,17 @@ class CollateBase:
 
         return items
 
-    def do_collate(self, item):
+    def match_keys(self, keys: list[str]) -> list[str]:
+        if not self.item_keys_cached:
+            for key in keys:
+                for item_key in self.item_keys:
+                    if re.match(item_key, key):
+                        self.item_keys_cached.append(key)
+                        break
+
+        return self.item_keys_cached
+
+    def do_collate(self, item: dict[str, Any]):
         raise NotImplementedError
 
 
