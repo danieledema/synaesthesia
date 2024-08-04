@@ -53,7 +53,8 @@ class CollateBase:
 
 class BatchCollate(CollateBase):
     def do_collate(self, items):
-        return default_collate(items)
+        result = {key: default_collate(items[key]) for key in items.keys()}
+        return result
 
 
 class DeleteKeys(CollateBase):
