@@ -251,7 +251,7 @@ class MultiSignalDataset(DatasetBase):
 
             print_string += f"{i} -------------\n"
             print_string += inner_repr
-            print_string += "\n------------------\n"
+        print_string += "\n------------------\n"
         return print_string
 
     @property
