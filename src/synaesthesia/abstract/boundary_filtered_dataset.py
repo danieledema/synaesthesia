@@ -1,6 +1,6 @@
 from tqdm import tqdm
 
-from .conversion import convert_to_timestamp
+from .conversion import convert_to_string, convert_to_timestamp
 from .dataset_base import DatasetBase
 
 
@@ -42,7 +42,7 @@ class BoundaryFilteredDataset(DatasetBase):
 
     @property
     def id(self):
-        return ""
+        return self.dataset.id
 
     def __len__(self):
         return len(self.fwd_indices)
@@ -57,8 +57,19 @@ class BoundaryFilteredDataset(DatasetBase):
         return self.bwd_indices[self.dataset.get_timestamp_idx(timestamp)]
 
     @property
-    def sensor_id(self):
-        return self.dataset.sensor_id
+    def sensor_ids(self):
+        return self.dataset.sensor_ids
 
     def __repr__(self):
-        return f"BoundaryFilteredDataset({self.dataset}, {self.boundaries})\nTotal samples: {len(self)}\n"
+        inner_repr = repr(self.dataset)
+        lines = inner_repr.split("\n")
+        inner_repr = "\n".join(["\t" + line for line in lines])
+
+        boundaries = "\n".join(
+            [
+                f"\t{convert_to_string(b[0])} - {convert_to_string(b[1])}"
+                for b in self.boundaries
+            ]
+        )
+
+        return f"BoundaryFilteredDataset - {len(self.dataset)} samples\n{inner_repr}\n{boundaries}"
