@@ -7,9 +7,7 @@ from torch.utils.data.dataloader import default_collate
 
 
 class CollateBase:
-    def __init__(
-        self, item_keys: str | list[str] = ".*", delete_original=False
-    ) -> None:
+    def __init__(self, item_keys: str | list[str] = ".*", delete_original=False):
         self.item_keys = item_keys if isinstance(item_keys, list) else [item_keys]
         self.item_keys = [re.compile(key) for key in self.item_keys]
 
@@ -17,13 +15,18 @@ class CollateBase:
 
         self.item_keys_cached = []
 
-    def __call__(self, items_list: list[dict[str, Any]]):
+    def __call__(
+        self, items_list: list[dict[str, Any]] | dict[str, Any]
+    ) -> dict[str, Any]:
 
         assert len(items_list) > 0, "items_list must have at least one item"
 
-        items = {
-            key: [item[key] for item in items_list] for key in items_list[0].keys()
-        }
+        if isinstance(items_list, list):
+            items = {
+                key: [item[key] for item in items_list] for key in items_list[0].keys()
+            }
+        else:
+            items = items_list
 
         keys = self.match_keys(list(items.keys()))
 
@@ -53,7 +56,7 @@ class CollateBase:
 
 class BatchCollate(CollateBase):
     def do_collate(self, items):
-        result = {key: default_collate(items[key]) for key in items.keys()}
+        result = {key: default_collate(items[key]).float() for key in items.keys()}
         return result
 
 
@@ -66,7 +69,7 @@ class DeleteKeys(CollateBase):
 
 
 class ListCollate(CollateBase):
-    def __init__(self, collates: list[CollateBase], item_keys=None):
+    def __init__(self, collates: list[CollateBase], item_keys=".*"):
         super().__init__(item_keys)
         self.collates = collates
 
@@ -79,7 +82,7 @@ class ListCollate(CollateBase):
 
 class RandomSaltAndPepperNoise(CollateBase):
     def __init__(
-        self, amount=(0.01, 0.06), salt_vs_pepper=(0.4, 0.6), p=0.5, item_keys=None
+        self, amount=(0.01, 0.06), salt_vs_pepper=(0.4, 0.6), p=0.5, item_keys=".*"
     ):
         super().__init__(item_keys)
 
@@ -100,10 +103,10 @@ class RandomSaltAndPepperNoise(CollateBase):
 
 
 class RandomRotate(CollateBase):
-    def __init__(self, max_angle=20, share_rotations=False, item_keys=None):
+    def __init__(self, max_angle=20, share_rotations=False, item_keys=".*"):
         super().__init__(item_keys)
 
-        self.max_angle = max_angle
+        self.max_angle = torch.tensor(max_angle).float()
         self.share_rotations = share_rotations
 
     def do_collate(self, images):
@@ -121,7 +124,7 @@ class RandomRotate(CollateBase):
 
 
 class RandomVerticalFlip(CollateBase):
-    def __init__(self, p=0.5, share_flip=False, item_keys=None):
+    def __init__(self, p=0.5, share_flip=False, item_keys=".*"):
         super().__init__(item_keys)
         self.p = p
         self.share_flip = share_flip
@@ -144,7 +147,7 @@ class RandomVerticalFlip(CollateBase):
 
 
 class ColorJitter(CollateBase):
-    def __init__(self, br=0.5, sat=0.5, p=0.5, item_keys=None):
+    def __init__(self, br=0.5, sat=0.5, p=0.5, item_keys=".*"):
         super().__init__(item_keys)
 
         self.color_jitter = kornia.augmentation.ColorJitter(
@@ -156,7 +159,7 @@ class ColorJitter(CollateBase):
 
 
 class GaussianBlur(CollateBase):
-    def __init__(self, kernel_size=(3, 3), sigma=(1, 10), p=0.5, item_keys=None):
+    def __init__(self, kernel_size=(3, 3), sigma=(1, 10), p=0.5, item_keys=".*"):
         super().__init__(item_keys)
 
         self.random_gblur = kornia.augmentation.RandomGaussianBlur(
@@ -168,7 +171,7 @@ class GaussianBlur(CollateBase):
 
 
 class Clipping(CollateBase):
-    def __init__(self, min_val=0, max_val=1, item_keys=None):
+    def __init__(self, min_val=0, max_val=1, item_keys=".*"):
         super().__init__(item_keys)
         self.min_val = min_val
         self.max_val = max_val
@@ -181,7 +184,7 @@ class Clipping(CollateBase):
 
 
 class Normalization(CollateBase):
-    def __init__(self, mean=0.5, std=0.5, item_keys=None):
+    def __init__(self, mean=0.5, std=0.5, item_keys=".*"):
         super().__init__(item_keys)
         self.mean = mean
         self.std = std
@@ -196,7 +199,7 @@ class MaxCollate(CollateBase):
 
 
 class ScaleData(CollateBase):
-    def __init__(self, min_val=0, max_val=1, center=0.5, item_keys=None):
+    def __init__(self, min_val=0, max_val=1, center=0.5, item_keys=".*"):
         super().__init__(item_keys)
         self.min_val = min_val
         self.max_val = max_val
