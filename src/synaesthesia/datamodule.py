@@ -87,24 +87,6 @@ class ParsedDataModule(LightningDataModule):
         with open(test_path, "wb") as path:
             pickle.dump(self.test_dataset, path)
 
-        with open(root_path / "train_sampler.pkl", "wb") as path:
-            pickle.dump(self.train_sampler, path)
-
-        with open(root_path / "val_sampler.pkl", "wb") as path:
-            pickle.dump(self.val_sampler, path)
-
-        with open(root_path / "test_sampler.pkl", "wb") as path:
-            pickle.dump(self.test_sampler, path)
-
-        with open(root_path / "train_collate_fn.pkl", "wb") as path:
-            pickle.dump(self.train_collate_fn, path)
-
-        with open(root_path / "val_collate_fn.pkl", "wb") as path:
-            pickle.dump(self.val_collate_fn, path)
-
-        with open(root_path / "test_collate_fn.pkl", "wb") as path:
-            pickle.dump(self.test_collate_fn, path)
-
         config_cache_path = root_path / "config.pkl"
         with open(config_cache_path, "wb") as path:
             pickle.dump(current_cfg, path)
@@ -135,6 +117,8 @@ class ParsedDataModule(LightningDataModule):
 
         with open(test_path, "rb") as path:
             test_dataset = pickle.load(path)
+
+        # TODO: assert that sampler would work on the dataset
 
         return ParsedDataModule(
             train_dataset,
