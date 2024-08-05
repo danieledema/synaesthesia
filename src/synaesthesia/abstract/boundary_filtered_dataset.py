@@ -67,7 +67,7 @@ class BoundaryFilteredDataset(DatasetBase):
 
         boundaries = "\n".join(
             [
-                f"\t{convert_to_string(b[0])} - {convert_to_string(b[1])}"
+                f"\t{b[0]} - {b[1]}"
                 for b in self.boundaries
             ]
         )
