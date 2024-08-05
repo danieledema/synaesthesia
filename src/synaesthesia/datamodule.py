@@ -110,7 +110,17 @@ class ParsedDataModule(LightningDataModule):
             pickle.dump(current_cfg, path)
 
     @staticmethod
-    def load(root_path, batch_size, num_workers):
+    def load(
+        root_path,
+        batch_size,
+        num_workers,
+        train_sampler=None,
+        val_sampler=None,
+        test_sampler=None,
+        train_collate_fn=None,
+        val_collate_fn=None,
+        test_collate_fn=None,
+    ):
         root_path = Path(root_path)
 
         train_path = root_path / "train_dataset.pkl"
@@ -125,24 +135,6 @@ class ParsedDataModule(LightningDataModule):
 
         with open(test_path, "rb") as path:
             test_dataset = pickle.load(path)
-
-        with open(root_path / "train_sampler.pkl", "rb") as path:
-            train_sampler = pickle.load(path)
-
-        with open(root_path / "val_sampler.pkl", "rb") as path:
-            val_sampler = pickle.load(path)
-
-        with open(root_path / "test_sampler.pkl", "rb") as path:
-            test_sampler = pickle.load(path)
-
-        with open(root_path / "train_collate_fn.pkl", "rb") as path:
-            train_collate_fn = pickle.load(path)
-
-        with open(root_path / "val_collate_fn.pkl", "rb") as path:
-            val_collate_fn = pickle.load(path)
-
-        with open(root_path / "test_collate_fn.pkl", "rb") as path:
-            test_collate_fn = pickle.load(path)
 
         return ParsedDataModule(
             train_dataset,
@@ -164,24 +156,8 @@ class ParsedDataModule(LightningDataModule):
         train_path = root_path / "train_dataset.pkl"
         val_path = root_path / "val_dataset.pkl"
         test_path = root_path / "test_dataset.pkl"
-        train_sampler_path = root_path / "train_sampler.pkl"
-        val_sampler_path = root_path / "val_sampler.pkl"
-        test_sampler_path = root_path / "test_sampler.pkl"
-        train_collate_fn_path = root_path / "train_collate_fn.pkl"
-        val_collate_fn_path = root_path / "val_collate_fn.pkl"
-        test_collate_fn_path = root_path / "test_collate_fn.pkl"
 
-        if (
-            not train_path.exists()
-            or not val_path.exists()
-            or not test_path.exists()
-            or not train_sampler_path.exists()
-            or not val_sampler_path.exists()
-            or not test_sampler_path.exists()
-            or not train_collate_fn_path.exists()
-            or not val_collate_fn_path.exists()
-            or not test_collate_fn_path.exists()
-        ):
+        if not train_path.exists() or not val_path.exists() or not test_path.exists():
             return False
 
         with open(root_path / "config.pkl", "rb") as path:
@@ -191,12 +167,6 @@ class ParsedDataModule(LightningDataModule):
                 current_cfg["train_dataset"] != cached_cfg["train_dataset"]
                 or current_cfg["val_dataset"] != cached_cfg["val_dataset"]
                 or current_cfg["test_dataset"] != cached_cfg["test_dataset"]
-                or current_cfg["train_sampler"] != cached_cfg["train_sampler"]
-                or current_cfg["val_sampler"] != cached_cfg["val_sampler"]
-                or current_cfg["test_sampler"] != cached_cfg["test_sampler"]
-                or current_cfg["train_collate_fn"] != cached_cfg["train_collate_fn"]
-                or current_cfg["val_collate_fn"] != cached_cfg["val_collate_fn"]
-                or current_cfg["test_collate_fn"] != cached_cfg["test_collate_fn"]
             ):
                 return False
 

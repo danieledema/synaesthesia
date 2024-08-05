@@ -23,6 +23,12 @@ def create_or_load_datamodule(cache_path: str | Path, cfg):
             cache_path,
             cfg["batch_size"],
             cfg["num_workers"],
+            instantiate(cfg["train_sampler"]),
+            instantiate(cfg["val_sampler"]),
+            instantiate(cfg["test_sampler"]),
+            instantiate(cfg["train_collate_fn"]),
+            instantiate(cfg["val_collate_fn"]),
+            instantiate(cfg["test_collate_fn"]),
         )
     else:
         data_module = instantiate(cfg)
