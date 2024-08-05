@@ -56,7 +56,14 @@ class CollateBase:
 
 class BatchCollate(CollateBase):
     def do_collate(self, items):
-        result = {key: default_collate(items[key]).float() for key in items.keys()}
+        result = {
+            key: (
+                default_collate(items[key]).float()
+                if not isinstance(items[key], torch.Tensor)
+                else items[key]
+            )
+            for key in items.keys()
+        }
         return result
 
 
