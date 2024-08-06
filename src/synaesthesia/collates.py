@@ -76,8 +76,10 @@ class DeleteKeys(CollateBase):
 
 
 class ListCollate(CollateBase):
-    def __init__(self, collates: list[CollateBase], item_keys=".*"):
-        super().__init__(item_keys)
+    def __init__(
+        self, collates: list[CollateBase], item_keys=".*", delete_original=False
+    ):
+        super().__init__(item_keys, delete_original)
         self.collates = collates
 
     def do_collate(self, items):
