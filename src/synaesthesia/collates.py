@@ -205,6 +205,18 @@ class MaxCollate(CollateBase):
         return {key: torch.max(item) for key, item in items.items()}
 
 
+class ConcatenateCollate(CollateBase):
+    def __init__(self, new_key: str, dim=1, item_keys=".*", delete_original=True):
+        super().__init__(item_keys, delete_original)
+
+        self.new_key = new_key
+        self.dim = dim
+
+    def do_collate(self, items):
+        item_list = [items[key] for key in sorted(items.keys())]
+        return {self.new_key: torch.cat(item_list, dim=self.dim)}
+
+
 class ScaleData(CollateBase):
     def __init__(self, min_val=0, max_val=1, center=0.5, item_keys=".*"):
         super().__init__(item_keys)
