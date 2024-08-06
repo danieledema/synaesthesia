@@ -7,16 +7,18 @@ from tqdm import tqdm
 def calculate_class_weights(dataloader: DataLoader, class_label: str, num_classes: int):
     class_weights = [0] * num_classes
 
-    sample_weights = [0 for _ in range(len(dataloader))]
+    sample_weights = [0 for _ in range(len(dataloader.dataset))]
 
     for data in tqdm(dataloader):
-        class_weights[data[class_label]] += 1
-
-        for i in data["idx"]:
-            sample_weights[i] = data[class_label][i]
+        for i, c in zip(data["idx"].tolist(), data[class_label].tolist()):
+            class_weights[c] += 1
+            sample_weights[i] = c
 
     max_class_weight = max(class_weights)
     class_weights = [max_class_weight / class_weight for class_weight in class_weights]
+
+    for i in range(len(sample_weights)):
+            sample_weights[i] = class_weights[sample_weights[i]]
 
     return sample_weights, class_weights
 
