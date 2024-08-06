@@ -6,16 +6,17 @@ from pyinputplus import inputYesNo
 from .datamodule import ParsedDataModule
 
 
-def create_or_load_datamodule(cache_path: str | Path, cfg):
+def create_or_load_datamodule(cache_path: str | Path, cfg, no_ask: bool = False):
     cache_path = Path(cache_path)
     cache_path.mkdir(parents=True, exist_ok=True)
 
-    load_cache = False
+    load_cache = no_ask
     if ParsedDataModule.check_load_cache(cache_path, cfg):
-        load_cache = (
-            inputYesNo(f"Found cache at {cache_path}. Load from cache? [yes/no] ")
-            == "yes"
-        )
+        if not no_ask:
+            load_cache = (
+                inputYesNo(f"Found cache at {cache_path}. Load from cache? [yes/no] ")
+                == "yes"
+            )
 
     if load_cache:
         print(f"Loading data module from {cache_path}")
