@@ -42,7 +42,7 @@ class ParsedDataModule(LightningDataModule):
             self.train_dataset,
             batch_size=self.batch_size,
             num_workers=self.num_workers,
-            shuffle=True,
+            shuffle=True if self.train_sampler is None else False,
             sampler=self.train_sampler,
             collate_fn=self.train_collate_fn,
             pin_memory=True,
