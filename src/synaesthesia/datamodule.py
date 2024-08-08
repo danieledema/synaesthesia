@@ -45,7 +45,6 @@ class ParsedDataModule(LightningDataModule):
             shuffle=True if self.train_sampler is None else False,
             sampler=self.train_sampler,
             collate_fn=self.train_collate_fn,
-            pin_memory=True,
         )
 
     def val_dataloader(self):
@@ -56,7 +55,6 @@ class ParsedDataModule(LightningDataModule):
             num_workers=self.num_workers,
             sampler=self.val_sampler,
             collate_fn=self.val_collate_fn,
-            pin_memory=True,
         )
 
     def test_dataloader(self):
@@ -66,7 +64,6 @@ class ParsedDataModule(LightningDataModule):
             num_workers=self.num_workers,
             sampler=self.test_sampler,
             collate_fn=self.test_collate_fn,
-            pin_memory=True,
         )
 
     def save(self, path, current_cfg, overwrite=True):
