@@ -106,8 +106,11 @@ class MultiSignalDataset(DatasetBase):
                             j += 1
                         pbar.update(1)
 
-                for i in reversed(to_delete):
-                    del merged_timestamps[i]
+                merged_timestamps = [
+                    timestamp
+                    for i, timestamp in enumerate(merged_timestamps)
+                    if i not in to_delete
+                ]
 
             return merged_timestamps
 
