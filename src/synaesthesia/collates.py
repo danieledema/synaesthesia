@@ -219,6 +219,19 @@ class ConcatenateCollate(CollateBase):
         return {self.new_key: torch.cat(item_list, dim=self.dim)}
 
 
+class OutlierCollate(CollateBase):
+    def __init__(self, thresholds, item_keys=".*"):
+        super().__init__(item_keys)
+
+        self.thresholds = thresholds
+
+    def do_collate(self, items):
+        for key in items.keys():
+            items[key][items[key] < self.thresholds[0]] = self.thresholds[0]
+            items[key][items[key] > self.thresholds[1]] = self.thresholds[1]
+        return items
+
+
 class ScaleData(CollateBase):
     def __init__(self, min_val=0, max_val=1, center=0.5, item_keys=".*"):
         super().__init__(item_keys)

@@ -19,21 +19,18 @@ class CsvDataset(DatasetBase):
         self.cols = (
             cols if isinstance(cols, list) else [cols] if cols else self.data.columns
         )
+        self.cols = [col for col in self.cols if not col == "timestamp"]
 
     def __len__(self):
         return len(self.data)
 
     def get_data(self, idx):
-        data = {
-            f"{col}": self.data[col].values[idx]
-            for col in self.cols
-            if col != "timestamp"
-        }
+        data = {f"{col}": self.data[col].values[idx] for col in self.cols}
         return data
 
     @property
     def sensor_ids(self):
-        return [f"{col}" for col in self.data.columns if col != "timestamp"]
+        return self.cols
 
     def get_timestamp(self, idx):
         return self.data["timestamp"].values[idx]
