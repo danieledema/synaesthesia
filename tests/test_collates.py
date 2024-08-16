@@ -1,10 +1,9 @@
-from pathlib import Path
-
 from torch.utils.data.dataloader import DataLoader
 
+from src.synaesthesia.abstract.multi_signal_dataset import MultiSignalDataset
+from src.synaesthesia.collates import *
+
 from .simple_csv_dataset import SimpleCsvDataset
-from .vigil2.data.abstract.multi_signal_dataset import MultiSignalDataset
-from .vigil2.data.collates import *
 
 
 def test_batch_collate():

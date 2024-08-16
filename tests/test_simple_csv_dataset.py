@@ -1,5 +1,6 @@
+from src.synaesthesia.abstract.conversion import convert_to_string, convert_to_timestamp
+
 from .simple_csv_dataset import SimpleCsvDataset
-from .vigil2.data.abstract.conversion import convert_to_string, convert_to_timestamp
 
 
 def test_simple_csv_dataset_length():

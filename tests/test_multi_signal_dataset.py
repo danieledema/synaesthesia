@@ -1,6 +1,7 @@
+from src.synaesthesia.abstract.conversion import convert_to_string
+from src.synaesthesia.abstract.multi_signal_dataset import MultiSignalDataset
+
 from .simple_csv_dataset import SimpleCsvDataset
-from .vigil2.data.abstract.conversion import convert_to_string
-from .vigil2.data.abstract.multi_signal_dataset import MultiSignalDataset
 
 
 def test_simple_csv_dataset_both():

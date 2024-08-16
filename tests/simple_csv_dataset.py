@@ -1,4 +1,4 @@
-from src.vigil2.data.base_sensors.csv_dataset import CsvDataset
+from src.synaesthesia.base_sensors.csv_dataset import CsvDataset
 
 
 class SimpleCsvDataset(CsvDataset):

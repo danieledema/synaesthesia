@@ -1,6 +1,7 @@
+from src.synaesthesia.abstract.conversion import convert_to_string
+from src.synaesthesia.abstract.sequential_dataset import SequentialDataset
+
 from .simple_csv_dataset import SimpleCsvDataset
-from .vigil2.data.abstract.conversion import convert_to_string
-from .vigil2.data.abstract.sequential_dataset import SequentialDataset
 
 
 def test_sequential_sensor_dataset_skip0():
