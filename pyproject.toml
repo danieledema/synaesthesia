@@ -13,6 +13,7 @@ dependencies = [
     "pandas>=2.2.2",
     "loguru>=0.7.2",
     "kornia>=0.7.3",
+    "pylint>=3.2.6",
 ]
 requires-python = ">=3.12"
 readme = "README.md"
