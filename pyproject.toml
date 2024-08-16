@@ -1,0 +1,21 @@
+[project]
+name = "synaesthesia"
+version = "0.1.0"
+description = "Datasets and data modules for projects with multisensor requirements"
+authors = [
+    {name = "Daniele De Martini", email = "daniele@robots.ox.ac.uk"},
+]
+dependencies = [
+    "pre-commit>=3.8.0",
+]
+requires-python = ">=3.12"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[tool.pdm]
+distribution = true

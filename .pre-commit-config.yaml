@@ -1,0 +1,33 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-symlinks
+-   repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+    -   id: black
+        language_version: python3.12
+-   repo: local
+    hooks:
+    -   id: pylint
+        name: pylint
+        entry: pdm run pylint
+        language: system
+        types: [python]
+        args:
+            - --rcfile=.pylintrc
+            - --ignore-imports=yes
+            - --fail-on=F,E
+            - --exit-zero
+-   repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+    -   id: isort
+        args:
+            - --profile=black
