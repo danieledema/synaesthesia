@@ -1,6 +1,12 @@
 from typing import Any, Literal
 
 from .dataset_base import DatasetBase
+from src.synaesthesia.abstract.filter_functions import (
+    Filter,
+    SkipNFilter,
+    MultipleNFilter,
+    ExponentialFilter,
+)
 
 
 class SequentialDataset(DatasetBase):
@@ -8,22 +14,25 @@ class SequentialDataset(DatasetBase):
         self,
         dataset: DatasetBase,
         n_samples=2,
-        skip_n=0,
+        filter: Filter = None,
         stride=1,
         timestamp_idx: Literal["first", "last"] = "first",
         return_timestamps=False,
     ):
         self.dataset = dataset
         self.n_samples = n_samples
-        self.skip_n = skip_n
+        self.filter = filter
         self.stride = stride
         self.timestamp_idx = timestamp_idx
         self.return_timestamps = return_timestamps
 
-        self.idx_format = tuple(
-            [0] + [i * (1 + self.skip_n) for i in range(1, n_samples)]
-        )
-
+        # Generate idx_format using the provided filter
+        if self.filter:
+            self.idx_format = self.filter.get_indices(n_samples)
+        else:
+            # Default behavior: Generate a simple sequence [0, 1, 2, ..., n_samples-1]
+            self.idx_format = list(range(n_samples))
+            
     @property
     def idxs(self) -> list[int]:
         return [i * self.stride for i in range(len(self.dataset) // self.stride)]
