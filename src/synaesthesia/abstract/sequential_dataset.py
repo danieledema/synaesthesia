@@ -15,14 +15,14 @@ class SequentialDataset(DatasetBase):
         dataset: DatasetBase,
         n_samples=2,
         filter: Filter = None,
-        stride=1,
+        stride: int = 1,
         timestamp_idx: Literal["first", "last"] = "first",
         return_timestamps=False,
     ):
         self.dataset = dataset
         self.n_samples = n_samples
         self.filter = filter
-        self.stride = stride
+        self.stride = self.stride = max(stride, 1)
         self.timestamp_idx = timestamp_idx
         self.return_timestamps = return_timestamps
 
