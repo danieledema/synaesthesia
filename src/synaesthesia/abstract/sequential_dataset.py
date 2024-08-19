@@ -1,12 +1,8 @@
 from typing import Any, Literal
 
+from src.synaesthesia.abstract.filter_functions import Filter
+
 from .dataset_base import DatasetBase
-from src.synaesthesia.abstract.filter_functions import (
-    Filter,
-    SkipNFilter,
-    MultipleNFilter,
-    ExponentialFilter,
-)
 
 
 class SequentialDataset(DatasetBase):
@@ -14,7 +10,7 @@ class SequentialDataset(DatasetBase):
         self,
         dataset: DatasetBase,
         n_samples=2,
-        filter: Filter = None,
+        filter: Filter | None = None,
         stride: int = 1,
         timestamp_idx: Literal["first", "last"] = "first",
         return_timestamps=False,
@@ -22,7 +18,10 @@ class SequentialDataset(DatasetBase):
         self.dataset = dataset
         self.n_samples = n_samples
         self.filter = filter
-        self.stride = self.stride = max(stride, 1)
+
+        assert stride > 0, "Stride must be greater than 0"
+        self.stride = stride
+
         self.timestamp_idx = timestamp_idx
         self.return_timestamps = return_timestamps
 
@@ -32,7 +31,7 @@ class SequentialDataset(DatasetBase):
         else:
             # Default behavior: Generate a simple sequence [0, 1, 2, ..., n_samples-1]
             self.idx_format = list(range(n_samples))
-            
+
     @property
     def idxs(self) -> list[int]:
         return [i * self.stride for i in range(len(self.dataset) // self.stride)]
