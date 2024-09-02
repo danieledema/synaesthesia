@@ -1,98 +1,119 @@
-from src.synaesthesia.abstract.conversion import convert_to_string
+import pytest
+from pathlib import Path
 from src.synaesthesia.abstract.sequential_dataset import SequentialDataset
-
 from .simple_csv_dataset import SimpleCsvDataset
+from src.synaesthesia.abstract.filter_functions import SkipNFilter
+from datetime import datetime
 
+# Determine the path to the directory of the current script
+BASE_DIR = Path(__file__).resolve().parent
+# Construct the path to the CSV file relative to the script's directory
+DATA_PATH = BASE_DIR / "test_data" / "test_data_10_s.csv"
 
-def test_sequential_sensor_dataset_skip0():
-    data_path = "tests/test_data/test_data_10_s.csv"
-    dataset = SimpleCsvDataset(data_path)
+def convert_timestamp_list_to_unix(timestamps):
+    """
+    Convert a list of timestamp strings in the format "YYYYMMDDTHHMMSSmmm" 
+    to Unix epoch time (integer format).
+    
+    :param timestamps: List of timestamp strings
+    :return: List of Unix epoch timestamps (integers)
+    """
+    return [
+        int(datetime.strptime(ts, "%Y%m%dT%H%M%S%f").timestamp()) 
+        for ts in timestamps
+    ]
 
+@pytest.fixture
+def ground_truth_data():
+    """
+    Fixture to provide ground truth data for tests.
+    """
+    return [
+        {
+            "timestamps": convert_timestamp_list_to_unix(["20220101T000000000", "20220101T000020000", "20220101T000040000"]),
+            "random_integer1": [5, 3, 2],
+            "index_1.5": [1.5, 4.5, 7.5],
+        },
+        {
+            "timestamps": convert_timestamp_list_to_unix(["20220101T000030000", "20220101T000050000", "20220101T000110000"]),
+            "random_integer1": [7, 6, 4],
+            "index_1.5": [6., 9., 12.],
+        },
+        {
+            "timestamps": convert_timestamp_list_to_unix(["20220101T000100000", "20220101T000120000", "20220101T000140000"]),
+            "random_integer1": [8, 1, 5],
+            "index_1.5": [10.5, 13.5, 16.5],
+        },
+    ]
+
+@pytest.fixture
+def expected_timestamps(ground_truth_data):
+    """
+    Fixture to provide expected timestamps for tests.
+    """
+    return {
+        "first": [data["timestamps"][0] for data in ground_truth_data],
+        "last": [data["timestamps"][-1] for data in ground_truth_data],
+    }
+
+@pytest.fixture
+def common_setup():
+    """
+    Fixture for common setup shared by tests.
+    """
+    dataset = SimpleCsvDataset(DATA_PATH)
+    skip_filter = SkipNFilter(skip_n=1)
+    return dataset, skip_filter
+
+def test_sequential_dataset_data_values(common_setup, ground_truth_data):
+    dataset, skip_filter = common_setup
+
+    # Initialize SequentialDataset with the SkipNFilter, stride=3, and timestamp_idx set to "first"
     sensor_dataset = SequentialDataset(
-        dataset, n_samples=5, skip_n=0, timestamp_idx="last"
+        dataset,
+        n_samples=3,  # Set n_samples to 3
+        filter=skip_filter,
+        stride=3,
+        timestamp_idx="first",
+        return_timestamps=True
     )
 
-    print(f"Checking sensor_dataset length: {len(sensor_dataset)}")
-    assert len(sensor_dataset) == 26
+    # Validate the data returned by the dataset
+    for idx, expected in enumerate(ground_truth_data):
+        actual = sensor_dataset.get_data(idx)
+        assert actual == expected, f"Data mismatch at index {idx}: expected {expected}, got {actual}"
 
-    print(f"Checking sensor_dataset[0]: {sensor_dataset[0]}")
-    assert convert_to_string(sensor_dataset[0]["timestamp"]) == "20220101T000040000"
-    assert sensor_dataset[0]["CSV-random_integer1"] == [5, 9, 3, 7, 2]
-    assert sensor_dataset[0]["CSV-index_1.5"] == [1.5, 3.0, 4.5, 6.0, 7.5]
+def test_sequential_dataset_timestamp_indexing(common_setup, expected_timestamps):
+    dataset, skip_filter = common_setup
 
-    print(f"Checking sensor_dataset[1]: {sensor_dataset[1]}")
-    assert convert_to_string(sensor_dataset[1]["timestamp"]) == "20220101T000050000"
-    assert sensor_dataset[1]["CSV-random_integer1"] == [9, 3, 7, 2, 6]
-    assert sensor_dataset[1]["CSV-index_1.5"] == [3.0, 4.5, 6.0, 7.5, 9.0]
+    for timestamp_idx, expected_timestamps_for_idx in expected_timestamps.items():
+        # Initialize SequentialDataset with the SkipNFilter, stride=3, and timestamp_idx
+        sensor_dataset = SequentialDataset(
+            dataset,
+            n_samples=3,  # Set n_samples to 3
+            filter=skip_filter,
+            stride=3,
+            timestamp_idx=timestamp_idx,
+            return_timestamps=True
+        )
 
+        # Validate that the correct timestamp is returned based on timestamp_idx
+        for idx, expected_timestamp in enumerate(expected_timestamps_for_idx):
+            actual_data = sensor_dataset.__getitem__(idx)
+            actual_timestamp = actual_data["timestamp"]
+            assert actual_timestamp == expected_timestamp, f"Timestamp mismatch at index {idx}: expected {expected_timestamp}, got {actual_timestamp}"
 
-def test_sequential_sensor_dataset_skip1():
-    data_path = "tests/test_data/test_data_10_s.csv"
-    dataset = SimpleCsvDataset(data_path)
+def test_sequential_dataset_length(common_setup):
+    dataset, skip_filter = common_setup
 
+    # Initialize SequentialDataset with the SkipNFilter, stride=3, and timestamp_idx
     sensor_dataset = SequentialDataset(
-        dataset, n_samples=5, skip_n=1, timestamp_idx="last"
+        dataset,
+        n_samples=3,  # Set n_samples to 3
+        filter=skip_filter,
+        stride=3,
+        timestamp_idx="first",  # Using "first" just as an example; doesn't affect length
     )
 
-    print(f"Checking sensor_dataset length: {len(sensor_dataset)}")
-    assert len(sensor_dataset) == 22
-
-    print(f"Checking sensor_dataset[0]: {sensor_dataset[0]}")
-    assert convert_to_string(sensor_dataset[0]["timestamp"]) == "20220101T000120000"
-    assert sensor_dataset[0]["CSV-random_integer1"] == [5, 3, 2, 8, 1]
-    assert sensor_dataset[0]["CSV-index_1.5"] == [1.5, 4.5, 7.5, 10.5, 13.5]
-
-    print(f"Checking sensor_dataset[1]: {sensor_dataset[1]}")
-    assert convert_to_string(sensor_dataset[1]["timestamp"]) == "20220101T000130000"
-    assert sensor_dataset[1]["CSV-random_integer1"] == [9, 7, 6, 4, 10]
-    assert sensor_dataset[1]["CSV-index_1.5"] == [3.0, 6.0, 9.0, 12.0, 15.0]
-
-
-def test_sequential_sensor_dataset_skip1_stride5():
-    data_path = "tests/test_data/test_data_10_s.csv"
-    dataset = SimpleCsvDataset(data_path)
-
-    sensor_dataset = SequentialDataset(
-        dataset, n_samples=5, skip_n=1, stride=5, timestamp_idx="last"
-    )
-
-    for i in sensor_dataset:
-        print(i)
-
-    print(f"Checking sensor_dataset length: {len(sensor_dataset)}")
-    assert len(sensor_dataset) == 5
-
-    print(f"Checking sensor_dataset[0]: {sensor_dataset[0]}")
-    assert convert_to_string(sensor_dataset[0]["timestamp"]) == "20220101T000120000"
-    assert sensor_dataset[0]["CSV-random_integer1"] == [5, 3, 2, 8, 1]
-    assert sensor_dataset[0]["CSV-index_1.5"] == [1.5, 4.5, 7.5, 10.5, 13.5]
-
-    print(f"Checking sensor_dataset[1]: {sensor_dataset[1]}")
-    assert convert_to_string(sensor_dataset[1]["timestamp"]) == "20220101T000210000"
-    assert sensor_dataset[1]["CSV-random_integer1"] == [6, 4, 10, 9, 7]
-    assert sensor_dataset[1]["CSV-index_1.5"] == [9.0, 12.0, 15.0, 18.0, 21.0]
-
-
-def test_sequential_sensor_dataset_skip0_stride5():
-    data_path = "tests/test_data/test_data_10_s.csv"
-    dataset = SimpleCsvDataset(data_path)
-
-    sensor_dataset = SequentialDataset(
-        dataset, n_samples=5, skip_n=0, stride=5, timestamp_idx="last"
-    )
-
-    for i in sensor_dataset:
-        print(i)
-
-    print(f"Checking sensor_dataset length: {len(sensor_dataset)}")
-    assert len(sensor_dataset) == 6
-
-    print(f"Checking sensor_dataset[0]: {sensor_dataset[0]}")
-    assert convert_to_string(sensor_dataset[0]["timestamp"]) == "20220101T000040000"
-    assert sensor_dataset[0]["CSV-random_integer1"] == [5, 9, 3, 7, 2]
-    assert sensor_dataset[0]["CSV-index_1.5"] == [1.5, 3.0, 4.5, 6.0, 7.5]
-
-    print(f"Checking sensor_dataset[1]: {sensor_dataset[1]}")
-    assert convert_to_string(sensor_dataset[1]["timestamp"]) == "20220101T000130000"
-    assert sensor_dataset[1]["CSV-random_integer1"] == [6, 8, 4, 1, 10]
-    assert sensor_dataset[1]["CSV-index_1.5"] == [9.0, 10.5, 12.0, 13.5, 15.0]
+    # Validate dataset length
+    assert len(sensor_dataset) == 9, f"Expected dataset length 9, but got {len(sensor_dataset)}"
