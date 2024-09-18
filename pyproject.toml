@@ -1,28 +1,24 @@
-[project]
+[tool.poetry]
 name = "synaesthesia"
 version = "0.1.0"
-description = "Datasets and data modules for projects with multisensor requirements"
-authors = [
-    {name = "Daniele De Martini", email = "daniele@robots.ox.ac.uk"},
-]
-dependencies = [
-    "pre-commit>=3.8.0",
-    "pytorch-lightning>=2.4.0",
-    "pytest>=8.3.2",
-    "torch>=2.4.0",
-    "pandas>=2.2.2",
-    "loguru>=0.7.2",
-    "kornia>=0.7.3",
-    "pylint>=3.2.6",
-]
-requires-python = ">=3.12"
+description = ""
+authors = ["Daniele De Martini"]
 readme = "README.md"
-license = {text = "Apache-2.0"}
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pytorch-lightning = "^2.4.0"
+torch = "^2.4.1"
+pandas = "^2.2.2"
+loguru = "^0.7.2"
+kornia = "^0.7.3"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.8.0"
+pytest = "^8.3.3"
+pylint = "^3.2.7"
+black = "^24.8.0"
 
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
-
-
-[tool.pdm]
-distribution = true
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
