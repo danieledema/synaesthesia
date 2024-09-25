@@ -34,8 +34,10 @@ class SequentialDataset(DatasetBase):
 
     @property
     def idxs(self) -> list[int]:
-        return [i * self.stride for i in range(len(self.dataset) // self.stride)]
-
+        len_samples = self.idx_format[-1] + 1
+        max_start_index = len(self.dataset) - len_samples  # Calculate the maximum starting index for valid sequences
+        return [i * self.stride for i in range(max_start_index // self.stride + 1)]  # Generate valid starting points
+    
     def __len__(self) -> int:
         len_samples = self.idx_format[-1] + 1
         return (len(self.dataset) - len_samples) // self.stride + 1
