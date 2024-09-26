@@ -136,5 +136,5 @@ def test_sequential_dataset_idxs(common_setup):
 
     # Validate idxs property
     actual_idxs = sensor_dataset.idxs
-    import pdb; pdb.set_trace()
+
     assert actual_idxs == expected_idxs, f"Expected idxs {expected_idxs}, but got {actual_idxs}"
