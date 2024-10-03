@@ -61,7 +61,7 @@ def common_setup():
     """
     Fixture for common setup shared by tests.
     """
-    dataset = SimpleCsvDataset(DATA_PATH, machine_name='Left_arm')
+    dataset = SimpleCsvDataset(DATA_PATH, machine_name='LeftArm')
     skip_filter = SkipNFilter(skip_n=1)
     return dataset, skip_filter
 

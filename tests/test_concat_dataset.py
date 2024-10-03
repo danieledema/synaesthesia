@@ -16,8 +16,8 @@ def datasets():
     """
     Fixture to load datasets for testing.
     """
-    dataset1 = CsvDataset(DATA_PATH_10, machine_name='left_arm')
-    dataset2 = CsvDataset(DATA_PATH_10_concat_test, machine_name='left_arm')
+    dataset1 = CsvDataset(DATA_PATH_10, machine_name='LeftArm')
+    dataset2 = CsvDataset(DATA_PATH_10_concat_test, machine_name='LeftArm')
     return [dataset1, dataset2]
 
 @pytest.fixture
