@@ -54,18 +54,21 @@ class CustomConcatDataset(DatasetBase):
                 yield t
 
     def __repr__(self) -> str:
-        print_string = f"Concat dataset: {len(self)} samples\n"
+        print_string = f"\nConcat dataset: {len(self)} samples\n"
         print_string += f"Datasets: {len(self.datasets)}\n"
 
         for i, d in enumerate(self.datasets):
             inner_repr = repr(d)
             lines = inner_repr.split("\n")
+            # Indent each line for better visibility
             inner_repr = "\n".join(["\t" + line for line in lines])
 
-            print_string += f"{i} -------------\n"
-            print_string += inner_repr
+            print_string += f"\nDataset {i}:\n"
+            print_string += f"{inner_repr}\n"
             print_string += "------------------\n"
-        return print_string
+
+        # This is important to ensure that the string ends with a newline for clarity
+        return print_string.strip()  # Add an extra newline at the end for better separation
 
     @property
     def machine_name(self):
