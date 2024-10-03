@@ -8,8 +8,8 @@ def test_simple_csv_dataset_both():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'Left_arm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'Left_arm')
 
     assert len(dataset1) == 30
     assert len(dataset2) == 30
@@ -19,8 +19,8 @@ def test_multi_signal_dataset_all_none():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'Left_arm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'Left_arm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "all", "none")
 
@@ -74,8 +74,8 @@ def test_multi_signal_dataset_common_none():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'Left_arm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'Left_arm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "common", "none")
 
@@ -129,8 +129,8 @@ def test_multi_signal_dataset_I0_none():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'Left_arm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'Left_arm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "I:0", "none")
 
@@ -184,8 +184,8 @@ def test_multi_signal_dataset_I1_none():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'Left_arm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'Left_arm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "I:1", "none")
 
@@ -239,8 +239,8 @@ def test_multi_signal_dataset_common_last():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'Left_arm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'Left_arm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "common", "none")
 
@@ -294,8 +294,8 @@ def test_multi_signal_dataset_I0_last():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'Left_arm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'Left_arm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "I:0", "last")
 
@@ -349,8 +349,8 @@ def test_multi_signal_dataset_I1_last():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'Left_arm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'Left_arm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "I:1", "last")
 
@@ -404,8 +404,8 @@ def test_multi_signal_dataset_common_closest():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'Left_arm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'Left_arm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "common", "closest")
 
@@ -459,8 +459,8 @@ def test_multi_signal_dataset_I0_closest():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'Left_arm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'Left_arm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "I:0", "closest")
 
@@ -514,8 +514,8 @@ def test_multi_signal_dataset_I1_closest():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'Left_arm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'Left_arm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "I:1", "closest")
 
