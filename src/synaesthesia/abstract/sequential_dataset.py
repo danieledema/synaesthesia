@@ -76,8 +76,8 @@ class SequentialDataset(DatasetBase):
         return self.dataset.id
 
     @property
-    def satellite_name(self):
-        return self.dataset.satellite_name
+    def machine_name(self):
+        return self.dataset.machine_name
 
     def __repr__(self) -> str:
         inner_repr = repr(self.dataset)

@@ -73,8 +73,8 @@ class CustomConcatDataset(DatasetBase):
     @property
     def machine_name(self):
         # C'e' da mettere machine anche qui, ed il nome dobbiamo capire come definirlo se ci sono piu' machines, e.g. "left/right arm"
-        print("[WARNING] ConcatDataset does not have a satellite name")
-        return self.datasets[0].satellite_name
+        print("[WARNING] ConcatDataset does not have a machine name")
+        return self.datasets[0].machine_name
 
     @property
     def sensor_ids(self) -> list[str]:

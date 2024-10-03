@@ -204,17 +204,16 @@ class MultiSignalDataset(DatasetBase):
             dict: Dictionary containing data from all datasets at the specified timestamp.
         """
         data_slice = self.data_dict[self.timestamps[idx]]
-
         data_dict = {}
         for i, ds in enumerate(self.single_signal_datasets):
             if data_slice[i] is None:
                 for k in ds.sensor_ids:
-                    data_dict[f"{ds.satellite_name}_{ds.id}-{k}"] = None
+                    data_dict[f"{ds.machine_name}_{ds.id}-{k}"] = None
             else:
                 data = ds.get_data(data_slice[i])
 
                 for k in data:
-                    data_dict[f"{ds.satellite_name}_{ds.id}-{k}"] = data[k]
+                    data_dict[f"{ds.machine_name}_{ds.id}-{k}"] = data[k]
 
         return data_dict
 
