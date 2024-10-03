@@ -1,9 +1,10 @@
 from pathlib import Path
-
+import re
 import pandas
 
 from ..abstract.conversion import convert_to_timestamp
 from ..abstract.dataset_base import DatasetBase
+from ..utils import check_camel_case_format
 
 
 class CsvDataset(DatasetBase):
@@ -20,6 +21,8 @@ class CsvDataset(DatasetBase):
             cols if isinstance(cols, list) else [cols] if cols else self.data.columns
         )
         self.cols = [col for col in self.cols if not col == "timestamp"]
+
+        check_camel_case_format(machine_name)
 
         self._machine_name = machine_name
         

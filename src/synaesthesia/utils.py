@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import re
+
 from hydra.utils import instantiate
 from pyinputplus import inputYesNo
 
@@ -37,3 +39,8 @@ def create_or_load_datamodule(cache_path: str | Path, cfg, no_ask: bool = False)
         data_module.save(cache_path, cfg)
 
     return data_module
+    
+def check_camel_case_format(string: str):    
+    # Regex to match valid camel case pattern
+    if not re.match(r'([A-Z]?[a-z]+)+[0-9]*$', string):
+        raise ValueError(f"'{string}' is not in camel case format")
