@@ -1,6 +1,7 @@
 from typing import Any
 
 from torch.utils.data import Dataset
+from ..utils import check_camel_case_format
 
 
 class DatasetBase(Dataset):
@@ -79,6 +80,11 @@ class DatasetBase(Dataset):
 
     @property
     def machine_name(self) -> str:
+        machine_name = self.get_machine_name()
+        check_camel_case_format(machine_name)
+        return machine_name
+
+    def get_machine_name(self) -> str:
         raise NotImplementedError
 
     @property
@@ -86,6 +92,4 @@ class DatasetBase(Dataset):
         raise NotImplementedError
 
     def __repr__(self) -> str:
-        return (
-            f"{self.machine_name} - {' '.join(self.sensor_ids)}: {len(self)} samples"
-        )
+        return f"{self.machine_name} - {' '.join(self.sensor_ids)}: {len(self)} samples"
