@@ -68,7 +68,9 @@ class CustomConcatDataset(DatasetBase):
             print_string += "------------------\n"
 
         # This is important to ensure that the string ends with a newline for clarity
-        return print_string.strip()  # Add an extra newline at the end for better separation
+        return (
+            print_string.strip()
+        )  # Add an extra newline at the end for better separation
 
     @property
     def machine_name(self):

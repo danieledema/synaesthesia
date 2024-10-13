@@ -18,7 +18,7 @@ def calculate_class_weights(dataloader: DataLoader, class_label: str, num_classe
     class_weights = [max_class_weight / class_weight for class_weight in class_weights]
 
     for i in range(len(sample_weights)):
-            sample_weights[i] = class_weights[sample_weights[i]]
+        sample_weights[i] = class_weights[sample_weights[i]]
 
     return sample_weights, class_weights
 

@@ -65,11 +65,6 @@ class BoundaryFilteredDataset(DatasetBase):
         lines = inner_repr.split("\n")
         inner_repr = "\n".join(["\t" + line for line in lines])
 
-        boundaries = "\n".join(
-            [
-                f"\t{b[0]} - {b[1]}"
-                for b in self.boundaries
-            ]
-        )
+        boundaries = "\n".join([f"\t{b[0]} - {b[1]}" for b in self.boundaries])
 
         return f"BoundaryFilteredDataset - {len(self.dataset)} samples\n{inner_repr}\n{boundaries}"

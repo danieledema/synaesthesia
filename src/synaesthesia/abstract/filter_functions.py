@@ -30,4 +30,4 @@ class ExponentialFilter(Filter):
         self.base = base
 
     def get_indices(self, n_samples: int) -> List[int]:
-        return [int(self.base ** i) for i in range(n_samples)]
+        return [int(self.base**i) for i in range(n_samples)]
