@@ -179,7 +179,7 @@ class MultiSpectralImagerDataset(DatasetBase):
 
     @property
     def id(self) -> str:
-        return "EUV"
+        return "multispectral_imager"
 
     @property
     def sensor_ids(self) -> list[str]:
