@@ -7,44 +7,26 @@ from tqdm import tqdm
 from ..abstract.dataset_base import DatasetBase
 
 
-class EuvDataset(DatasetBase):
+class MultiSpectralImagerDataset(DatasetBase):
     """
-    Dataset class for EUV (Extreme Ultraviolet) data.
-
-    This class manages EUV data stored in FITS files organized by wavelength and timestamp.
-
-    Attributes:
-        folder_path (Path): Path to the folder containing the data files.
-        wavelengths (list[str]): List of wavelengths (as strings) for which data is available.
-        level (int): Level of the data (default is 2).
-        files (dict): Dictionary mapping each wavelength to a sorted list of file paths.
+    Dataset class for Multispectral Imager data.
+    It considers each wavelenght as a different sensor to combine.
     """
 
     def __init__(
         self,
         folder_path: str | Path,
         wavelengths: list[str],
-        level: int | None = 2,
         time_threshold: int | None = 60,
         remove_incomplete: bool = True,
         remove_duplicates: bool = True,
         duplicate_threshold: int = 10,
         already_aligned: bool = False,
     ):
-        """
-        Initializes the EUV dataset.
-
-        Args:
-            folder_path (str or Path): Path to the folder containing the data files.
-            wavelengths (list of str): List of wavelengths to load data for.
-            level (int, optional): Level of the data hierarchy (default is 2).
-            time_threshold (int, optional): Time threshold for matching timestamps (default is 1 second).
-        """
         super().__init__()
 
         self.folder_path = Path(folder_path)
         self.wavelengths = wavelengths
-        self.level = level
 
         files: list[Path] = self.collect_files()
         self.data_dict = {}
