@@ -61,7 +61,7 @@ def common_setup():
     """
     Fixture for common setup shared by tests.
     """
-    dataset = SimpleCsvDataset(DATA_PATH)
+    dataset = SimpleCsvDataset(DATA_PATH, machine_name='LeftArm')
     skip_filter = SkipNFilter(skip_n=1)
     return dataset, skip_filter
 
@@ -117,3 +117,24 @@ def test_sequential_dataset_length(common_setup):
 
     # Validate dataset length
     assert len(sensor_dataset) == 9, f"Expected dataset length 9, but got {len(sensor_dataset)}"
+
+def test_sequential_dataset_idxs(common_setup):
+    dataset, skip_filter = common_setup
+
+    # Initialize SequentialDataset with different parameters
+    sensor_dataset = SequentialDataset(
+        dataset,
+        n_samples=3,  # Set n_samples to 3
+        filter=skip_filter,
+        stride=3,
+        timestamp_idx="first",
+        return_timestamps=True
+    )
+
+    # Expected indices based on the dataset length and stride
+    expected_idxs = [0, 3, 6, 9, 12, 15, 18, 21, 24]
+
+    # Validate idxs property
+    actual_idxs = sensor_dataset.idxs
+
+    assert actual_idxs == expected_idxs, f"Expected idxs {expected_idxs}, but got {actual_idxs}"

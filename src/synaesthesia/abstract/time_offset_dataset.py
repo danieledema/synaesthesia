@@ -31,8 +31,8 @@ class TimeOffsetDataset(DatasetBase):
         return self.dataset.id
 
     @property
-    def satellite_name(self) -> str:
-        return self.dataset.satellite_name
+    def machine_name(self) -> str:
+        return self.dataset.machine_name
 
     @property
     def timestamps(self) -> list[int]:

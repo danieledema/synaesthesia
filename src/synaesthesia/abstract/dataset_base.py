@@ -45,7 +45,7 @@ class DatasetBase(Dataset):
         raise NotImplementedError
 
     @property
-    def satellite_name(self) -> str:
+    def machine_name(self) -> str:
         raise NotImplementedError
 
     @property
@@ -54,5 +54,5 @@ class DatasetBase(Dataset):
 
     def __repr__(self) -> str:
         return (
-            f"{self.satellite_name} - {' '.join(self.sensor_ids)}: {len(self)} samples"
+            f"{self.machine_name} - {' '.join(self.sensor_ids)}: {len(self)} samples"
         )

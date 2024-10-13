@@ -6,7 +6,7 @@ from .simple_csv_dataset import SimpleCsvDataset
 def test_simple_csv_dataset_length():
     path = "tests/test_data/test_data_10_s.csv"
 
-    dataset = SimpleCsvDataset(path)
+    dataset = SimpleCsvDataset(path, machine_name='LeftArm')
 
     print(f"Checking dataset length: {len(dataset)}")
     assert len(dataset) == 30
@@ -15,7 +15,7 @@ def test_simple_csv_dataset_length():
 def test_simple_csv_dataset_data0():
     path = "tests/test_data/test_data_10_s.csv"
 
-    dataset = SimpleCsvDataset(path)
+    dataset = SimpleCsvDataset(path, machine_name='LeftArm')
 
     print(f"Checking dataset[0]: {dataset[0]}")
     assert dataset[0] == {
@@ -29,7 +29,7 @@ def test_simple_csv_dataset_data0():
 def test_simple_csv_dataset_timestamps():
     path = "tests/test_data/test_data_10_s.csv"
 
-    dataset = SimpleCsvDataset(path)
+    dataset = SimpleCsvDataset(path, machine_name='LeftArm')
 
     print("Checking timestamps:")
     assert type(dataset.timestamps) == list
@@ -41,7 +41,7 @@ def test_simple_csv_dataset_timestamps():
 def test_simple_csv_dataset_timestamp_idx():
     path = "tests/test_data/test_data_10_s.csv"
 
-    dataset = SimpleCsvDataset(path)
+    dataset = SimpleCsvDataset(path, machine_name='LeftArm')
 
     print("Checking timestamps idx:")
     assert dataset.get_timestamp_idx(convert_to_timestamp("20220101T000000000")) == 0

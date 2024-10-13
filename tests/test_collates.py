@@ -10,8 +10,8 @@ def test_batch_collate():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, machine_name='LeftArm')
+    dataset2 = SimpleCsvDataset(data_path_2, machine_name='LeftArm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "common", "none")
 

@@ -8,8 +8,8 @@ def test_simple_csv_dataset_both():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'LeftArm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'LeftArm')
 
     assert len(dataset1) == 30
     assert len(dataset2) == 30
@@ -19,8 +19,8 @@ def test_multi_signal_dataset_all_none():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'LeftArm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'LeftArm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "all", "none")
 
@@ -38,10 +38,10 @@ def test_multi_signal_dataset_all_none():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
@@ -50,32 +50,32 @@ def test_multi_signal_dataset_all_none():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer1"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer1"] == 9
+    assert multi_dataset[0]["LeftArm_CSV-random_integer1"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer1"] == 9
 
-    assert multi_dataset[0]["FAKE_CSV-index_1.5"] == 1.5
-    assert multi_dataset[1]["FAKE_CSV-index_1.5"] == 3.0
+    assert multi_dataset[0]["LeftArm_CSV-index_1.5"] == 1.5
+    assert multi_dataset[1]["LeftArm_CSV-index_1.5"] == 3.0
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer2"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer2"] == None
+    assert multi_dataset[0]["LeftArm_CSV-random_integer2"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer2"] == None
 
-    assert multi_dataset[0]["FAKE_CSV-index_power_2"] == 1
-    assert multi_dataset[1]["FAKE_CSV-index_power_2"] == None
+    assert multi_dataset[0]["LeftArm_CSV-index_power_2"] == 1
+    assert multi_dataset[1]["LeftArm_CSV-index_power_2"] == None
 
 
 def test_multi_signal_dataset_common_none():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'LeftArm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'LeftArm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "common", "none")
 
@@ -93,10 +93,10 @@ def test_multi_signal_dataset_common_none():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
@@ -105,32 +105,32 @@ def test_multi_signal_dataset_common_none():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer1"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer1"] == 7
+    assert multi_dataset[0]["LeftArm_CSV-random_integer1"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer1"] == 7
 
-    assert multi_dataset[0]["FAKE_CSV-index_1.5"] == 1.5
-    assert multi_dataset[1]["FAKE_CSV-index_1.5"] == 6.0
+    assert multi_dataset[0]["LeftArm_CSV-index_1.5"] == 1.5
+    assert multi_dataset[1]["LeftArm_CSV-index_1.5"] == 6.0
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer2"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer2"] == 9
+    assert multi_dataset[0]["LeftArm_CSV-random_integer2"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer2"] == 9
 
-    assert multi_dataset[0]["FAKE_CSV-index_power_2"] == 1
-    assert multi_dataset[1]["FAKE_CSV-index_power_2"] == 2
+    assert multi_dataset[0]["LeftArm_CSV-index_power_2"] == 1
+    assert multi_dataset[1]["LeftArm_CSV-index_power_2"] == 2
 
 
 def test_multi_signal_dataset_I0_none():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'LeftArm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'LeftArm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "I:0", "none")
 
@@ -148,10 +148,10 @@ def test_multi_signal_dataset_I0_none():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
@@ -160,32 +160,32 @@ def test_multi_signal_dataset_I0_none():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer1"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer1"] == 9
+    assert multi_dataset[0]["LeftArm_CSV-random_integer1"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer1"] == 9
 
-    assert multi_dataset[0]["FAKE_CSV-index_1.5"] == 1.5
-    assert multi_dataset[1]["FAKE_CSV-index_1.5"] == 3.0
+    assert multi_dataset[0]["LeftArm_CSV-index_1.5"] == 1.5
+    assert multi_dataset[1]["LeftArm_CSV-index_1.5"] == 3.0
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer2"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer2"] == None
+    assert multi_dataset[0]["LeftArm_CSV-random_integer2"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer2"] == None
 
-    assert multi_dataset[0]["FAKE_CSV-index_power_2"] == 1
-    assert multi_dataset[1]["FAKE_CSV-index_power_2"] == None
+    assert multi_dataset[0]["LeftArm_CSV-index_power_2"] == 1
+    assert multi_dataset[1]["LeftArm_CSV-index_power_2"] == None
 
 
 def test_multi_signal_dataset_I1_none():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'LeftArm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'LeftArm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "I:1", "none")
 
@@ -203,10 +203,10 @@ def test_multi_signal_dataset_I1_none():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
@@ -215,32 +215,32 @@ def test_multi_signal_dataset_I1_none():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer1"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer1"] == 7
+    assert multi_dataset[0]["LeftArm_CSV-random_integer1"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer1"] == 7
 
-    assert multi_dataset[0]["FAKE_CSV-index_1.5"] == 1.5
-    assert multi_dataset[1]["FAKE_CSV-index_1.5"] == 6.0
+    assert multi_dataset[0]["LeftArm_CSV-index_1.5"] == 1.5
+    assert multi_dataset[1]["LeftArm_CSV-index_1.5"] == 6.0
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer2"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer2"] == 9
+    assert multi_dataset[0]["LeftArm_CSV-random_integer2"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer2"] == 9
 
-    assert multi_dataset[0]["FAKE_CSV-index_power_2"] == 1
-    assert multi_dataset[1]["FAKE_CSV-index_power_2"] == 2
+    assert multi_dataset[0]["LeftArm_CSV-index_power_2"] == 1
+    assert multi_dataset[1]["LeftArm_CSV-index_power_2"] == 2
 
 
 def test_multi_signal_dataset_common_last():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'LeftArm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'LeftArm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "common", "none")
 
@@ -258,10 +258,10 @@ def test_multi_signal_dataset_common_last():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
@@ -270,32 +270,32 @@ def test_multi_signal_dataset_common_last():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer1"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer1"] == 7
+    assert multi_dataset[0]["LeftArm_CSV-random_integer1"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer1"] == 7
 
-    assert multi_dataset[0]["FAKE_CSV-index_1.5"] == 1.5
-    assert multi_dataset[1]["FAKE_CSV-index_1.5"] == 6.0
+    assert multi_dataset[0]["LeftArm_CSV-index_1.5"] == 1.5
+    assert multi_dataset[1]["LeftArm_CSV-index_1.5"] == 6.0
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer2"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer2"] == 9
+    assert multi_dataset[0]["LeftArm_CSV-random_integer2"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer2"] == 9
 
-    assert multi_dataset[0]["FAKE_CSV-index_power_2"] == 1
-    assert multi_dataset[1]["FAKE_CSV-index_power_2"] == 2
+    assert multi_dataset[0]["LeftArm_CSV-index_power_2"] == 1
+    assert multi_dataset[1]["LeftArm_CSV-index_power_2"] == 2
 
 
 def test_multi_signal_dataset_I0_last():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'LeftArm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'LeftArm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "I:0", "last")
 
@@ -313,10 +313,10 @@ def test_multi_signal_dataset_I0_last():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
@@ -325,32 +325,32 @@ def test_multi_signal_dataset_I0_last():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer1"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer1"] == 9
+    assert multi_dataset[0]["LeftArm_CSV-random_integer1"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer1"] == 9
 
-    assert multi_dataset[0]["FAKE_CSV-index_1.5"] == 1.5
-    assert multi_dataset[1]["FAKE_CSV-index_1.5"] == 3.0
+    assert multi_dataset[0]["LeftArm_CSV-index_1.5"] == 1.5
+    assert multi_dataset[1]["LeftArm_CSV-index_1.5"] == 3.0
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer2"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer2"] == 5
+    assert multi_dataset[0]["LeftArm_CSV-random_integer2"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer2"] == 5
 
-    assert multi_dataset[0]["FAKE_CSV-index_power_2"] == 1
-    assert multi_dataset[1]["FAKE_CSV-index_power_2"] == 1
+    assert multi_dataset[0]["LeftArm_CSV-index_power_2"] == 1
+    assert multi_dataset[1]["LeftArm_CSV-index_power_2"] == 1
 
 
 def test_multi_signal_dataset_I1_last():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'LeftArm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'LeftArm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "I:1", "last")
 
@@ -368,10 +368,10 @@ def test_multi_signal_dataset_I1_last():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
@@ -380,32 +380,32 @@ def test_multi_signal_dataset_I1_last():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer1"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer1"] == 7
+    assert multi_dataset[0]["LeftArm_CSV-random_integer1"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer1"] == 7
 
-    assert multi_dataset[0]["FAKE_CSV-index_1.5"] == 1.5
-    assert multi_dataset[1]["FAKE_CSV-index_1.5"] == 6.0
+    assert multi_dataset[0]["LeftArm_CSV-index_1.5"] == 1.5
+    assert multi_dataset[1]["LeftArm_CSV-index_1.5"] == 6.0
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer2"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer2"] == 9
+    assert multi_dataset[0]["LeftArm_CSV-random_integer2"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer2"] == 9
 
-    assert multi_dataset[0]["FAKE_CSV-index_power_2"] == 1
-    assert multi_dataset[1]["FAKE_CSV-index_power_2"] == 2
+    assert multi_dataset[0]["LeftArm_CSV-index_power_2"] == 1
+    assert multi_dataset[1]["LeftArm_CSV-index_power_2"] == 2
 
 
 def test_multi_signal_dataset_common_closest():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'LeftArm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'LeftArm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "common", "closest")
 
@@ -423,10 +423,10 @@ def test_multi_signal_dataset_common_closest():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
@@ -435,32 +435,32 @@ def test_multi_signal_dataset_common_closest():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer1"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer1"] == 7
+    assert multi_dataset[0]["LeftArm_CSV-random_integer1"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer1"] == 7
 
-    assert multi_dataset[0]["FAKE_CSV-index_1.5"] == 1.5
-    assert multi_dataset[1]["FAKE_CSV-index_1.5"] == 6.0
+    assert multi_dataset[0]["LeftArm_CSV-index_1.5"] == 1.5
+    assert multi_dataset[1]["LeftArm_CSV-index_1.5"] == 6.0
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer2"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer2"] == 9
+    assert multi_dataset[0]["LeftArm_CSV-random_integer2"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer2"] == 9
 
-    assert multi_dataset[0]["FAKE_CSV-index_power_2"] == 1
-    assert multi_dataset[1]["FAKE_CSV-index_power_2"] == 2
+    assert multi_dataset[0]["LeftArm_CSV-index_power_2"] == 1
+    assert multi_dataset[1]["LeftArm_CSV-index_power_2"] == 2
 
 
 def test_multi_signal_dataset_I0_closest():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'LeftArm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'LeftArm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "I:0", "closest")
 
@@ -478,10 +478,10 @@ def test_multi_signal_dataset_I0_closest():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
@@ -490,32 +490,32 @@ def test_multi_signal_dataset_I0_closest():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer1"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer1"] == 9
+    assert multi_dataset[0]["LeftArm_CSV-random_integer1"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer1"] == 9
 
-    assert multi_dataset[0]["FAKE_CSV-index_1.5"] == 1.5
-    assert multi_dataset[1]["FAKE_CSV-index_1.5"] == 3.0
+    assert multi_dataset[0]["LeftArm_CSV-index_1.5"] == 1.5
+    assert multi_dataset[1]["LeftArm_CSV-index_1.5"] == 3.0
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer2"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer2"] == 5
+    assert multi_dataset[0]["LeftArm_CSV-random_integer2"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer2"] == 5
 
-    assert multi_dataset[0]["FAKE_CSV-index_power_2"] == 1
-    assert multi_dataset[1]["FAKE_CSV-index_power_2"] == 1
+    assert multi_dataset[0]["LeftArm_CSV-index_power_2"] == 1
+    assert multi_dataset[1]["LeftArm_CSV-index_power_2"] == 1
 
 
 def test_multi_signal_dataset_I1_closest():
     data_path_1 = "tests/test_data/test_data_10_s.csv"
     data_path_2 = "tests/test_data/test_data_30_s.csv"
 
-    dataset1 = SimpleCsvDataset(data_path_1)
-    dataset2 = SimpleCsvDataset(data_path_2)
+    dataset1 = SimpleCsvDataset(data_path_1, 'LeftArm')
+    dataset2 = SimpleCsvDataset(data_path_2, 'LeftArm')
 
     multi_dataset = MultiSignalDataset([dataset1, dataset2], "I:1", "closest")
 
@@ -533,10 +533,10 @@ def test_multi_signal_dataset_I1_closest():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
@@ -545,21 +545,21 @@ def test_multi_signal_dataset_I1_closest():
         [
             "timestamp",
             "idx",
-            "FAKE_CSV-random_integer1",
-            "FAKE_CSV-index_1.5",
-            "FAKE_CSV-random_integer2",
-            "FAKE_CSV-index_power_2",
+            "LeftArm_CSV-random_integer1",
+            "LeftArm_CSV-index_1.5",
+            "LeftArm_CSV-random_integer2",
+            "LeftArm_CSV-index_power_2",
         ]
     )
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer1"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer1"] == 7
+    assert multi_dataset[0]["LeftArm_CSV-random_integer1"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer1"] == 7
 
-    assert multi_dataset[0]["FAKE_CSV-index_1.5"] == 1.5
-    assert multi_dataset[1]["FAKE_CSV-index_1.5"] == 6.0
+    assert multi_dataset[0]["LeftArm_CSV-index_1.5"] == 1.5
+    assert multi_dataset[1]["LeftArm_CSV-index_1.5"] == 6.0
 
-    assert multi_dataset[0]["FAKE_CSV-random_integer2"] == 5
-    assert multi_dataset[1]["FAKE_CSV-random_integer2"] == 9
-
-    assert multi_dataset[0]["FAKE_CSV-index_power_2"] == 1
-    assert multi_dataset[1]["FAKE_CSV-index_power_2"] == 2
+    assert multi_dataset[0]["LeftArm_CSV-random_integer2"] == 5
+    assert multi_dataset[1]["LeftArm_CSV-random_integer2"] == 9
+    
+    assert multi_dataset[0]["LeftArm_CSV-index_power_2"] == 1
+    assert multi_dataset[1]["LeftArm_CSV-index_power_2"] == 2
