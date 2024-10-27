@@ -35,3 +35,19 @@ def test_simple_sequential_data():
 
     print(f"Checking batch shape: {batch}")
     assert batch["CSV-random_integer1"].shape == (2, 3)
+
+
+def test_simple_sequential_data_with_strings():
+    data_path = "tests/test_data/test_data_10_s.csv"
+    dataset = SimpleCsvDataset(data_path)
+    dataset = SequentialDataset(dataset, 3)
+
+    data = [dataset[0], dataset[1]]
+    for i in range(2):
+        data[i]["idx"] = str(data[i]["idx"])
+
+    collate = BatchCollate()
+    batch = collate(data)
+
+    print(f"Checking batch shape: {batch}")
+    assert batch["CSV-random_integer1"].shape == (2, 3)

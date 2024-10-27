@@ -58,10 +58,16 @@ class BatchCollate(CollateBase):
     def make_into_tensor(self, items):
         if isinstance(items, torch.Tensor):
             return items.float
+        if isinstance(items, str):
+            return items
         if isinstance(items, list):
-            return torch.stack([self.make_into_tensor(item) for item in items])
+            converted_items = [self.make_into_tensor(item) for item in items]
+            if all(isinstance(item, torch.Tensor) for item in converted_items):
+                return torch.stack(converted_items)
+            return converted_items
         if isinstance(items, dict):
             return {key: self.make_into_tensor(item) for key, item in items.items()}
+
         return torch.tensor(items).float()
 
     def do_collate(self, items):
