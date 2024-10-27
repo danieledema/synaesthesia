@@ -1,4 +1,5 @@
 import re
+from copy import deepcopy
 from typing import Any
 
 import kornia
@@ -18,7 +19,6 @@ class CollateBase:
     def __call__(
         self, items_list: list[dict[str, Any]] | dict[str, Any]
     ) -> dict[str, Any]:
-
         assert len(items_list) > 0, "items_list must have at least one item"
 
         if isinstance(items_list, list):
@@ -55,15 +55,17 @@ class CollateBase:
 
 
 class BatchCollate(CollateBase):
+    def make_into_tensor(self, items):
+        if isinstance(items, torch.Tensor):
+            return items.float
+        if isinstance(items, list):
+            return torch.stack([self.make_into_tensor(item) for item in items])
+        if isinstance(items, dict):
+            return {key: self.make_into_tensor(item) for key, item in items.items()}
+        return torch.tensor(items).float()
+
     def do_collate(self, items):
-        result = {
-            key: (
-                default_collate(items[key]).float()
-                if not isinstance(items[key], torch.Tensor)
-                else items[key]
-            )
-            for key in items.keys()
-        }
+        result = self.make_into_tensor(items)
         return result
 
 
