@@ -57,7 +57,7 @@ class CollateBase:
 class BatchCollate(CollateBase):
     def make_into_tensor(self, items):
         if isinstance(items, torch.Tensor):
-            return items.float
+            return items.float()
         if isinstance(items, str):
             return items
         if isinstance(items, list):
