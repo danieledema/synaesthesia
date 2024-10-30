@@ -262,3 +262,10 @@ class MultiSignalDataset(DatasetBase):
         Returns the ID of the dataset.
         """
         return ""
+
+    @property
+    def sensor_ids(self):
+        sids = []
+        for ds in self.single_signal_datasets:
+            sids += ds.sensor_ids
+        return sids
