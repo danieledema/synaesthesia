@@ -54,6 +54,9 @@ class ImageDataset(DatasetBase):
         if image_np.shape[-1] == 4:
             image_np = image_np[:, :, None]
 
+        if len(image_np.shape) == 3:
+            image_np = image_np.transpose(2, 0, 1)
+
         return image_np
 
     def get_timestamp(self, idx):

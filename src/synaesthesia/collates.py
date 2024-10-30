@@ -57,14 +57,44 @@ class CollateBase:
 class BatchCollate(CollateBase):
     def make_into_tensor(self, items):
         if isinstance(items, torch.Tensor):
-            return items.float
+            return items.float()
+
         if isinstance(items, str):
             return items
+
+        if items is None:
+            return torch.tensor(float("nan"))
+
         if isinstance(items, list):
             converted_items = [self.make_into_tensor(item) for item in items]
-            if all(isinstance(item, torch.Tensor) for item in converted_items):
-                return torch.stack(converted_items)
-            return converted_items
+
+            if not all(isinstance(item, torch.Tensor) for item in converted_items):
+                return converted_items
+
+            if any(torch.isnan(item).any() for item in converted_items):
+                dims = [
+                    item.shape
+                    for item in converted_items
+                    if not torch.isnan(item).any()
+                ]
+                if not dims:
+                    return items
+
+                assert all(
+                    dim == dims[0] for dim in dims
+                ), "All tensors must have the same shape"
+
+                converted_items = [
+                    (
+                        item
+                        if not torch.isnan(item).any()
+                        else torch.zeros(dims[0]) * float("nan")
+                    )
+                    for item in converted_items
+                ]
+
+            return torch.stack(converted_items)
+
         if isinstance(items, dict):
             return {key: self.make_into_tensor(item) for key, item in items.items()}
 
