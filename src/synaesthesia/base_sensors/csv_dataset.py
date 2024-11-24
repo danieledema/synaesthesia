@@ -1,7 +1,6 @@
 from pathlib import Path
 import pandas
 
-from ..abstract.conversion import convert_to_timestamp
 from ..abstract.dataset_base import DatasetBase
 
 
@@ -12,19 +11,22 @@ class CsvDataset(DatasetBase):
     and validating the structure of the CSV file.
     """
 
-    def __init__(self, path: str | Path, cols: list[str] | str | None = None):
+    def __init__(self, path: str | Path, cols: list[str] | str | None = None, sep=";"):
         super().__init__()
 
         self.path = Path(path)
-        self.data = pandas.read_csv(self.path)
+        self.data = pandas.read_csv(self.path, sep=sep)
         self.data["timestamp"] = (
-            self.data["timestamp"].apply(convert_to_timestamp).apply(int)
+            self.data["timestamp"].apply(self.convert_timestamp).apply(int)
         )
 
         self.cols = (
             cols if isinstance(cols, list) else [cols] if cols else self.data.columns
         )
         self.cols = [col for col in self.cols if not col == "timestamp"]
+
+    def convert_timestamp(self, timestamp: str | int) -> int:
+        raise NotImplementedError
 
     def __len__(self):
         return len(self.data)
