@@ -1,6 +1,6 @@
 from typing import Any, Literal
 
-from src.synaesthesia.abstract.filter_functions import Filter
+from .filter_functions import Filter
 
 from .dataset_base import DatasetBase
 
@@ -98,3 +98,7 @@ class SequentialDataset(DatasetBase):
 
     def get_timestamp_idx(self, timestamp):
         return self.timestamps.index(timestamp)
+
+    @property
+    def machine_name(self) -> str:
+        return self.dataset.machine_name
