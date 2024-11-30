@@ -17,6 +17,7 @@ class MultiSignalDataset(DatasetBase):
         aggregation: str = "all",
         fill: str = "none",
         time_cut: int = 60,  # in minutes
+        return_indices: bool = False,
     ):
         """
         Initializes the MultiSignalDataset.
@@ -33,6 +34,7 @@ class MultiSignalDataset(DatasetBase):
         self.aggregation = aggregation
         self.fill = fill
         self.time_cut = time_cut
+        self.return_indices = return_indices
 
         # Create a DataFrame to store timestamps and corresponding indices
         logger.info("Initializing timestamps...")
@@ -214,6 +216,9 @@ class MultiSignalDataset(DatasetBase):
 
                 for k in data:
                     data_dict[f"{ds.machine_name}_{ds.id}-{k}"] = data[k]
+
+                if self.return_indices:
+                    data_dict[f"{ds.machine_name}_{ds.id}-index"] = data_slice[i]
 
         return data_dict
 
