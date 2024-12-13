@@ -89,7 +89,7 @@ def test_dataset_getitem_jpg_rgb(create_dataset_jpg_rgb):
         assert "camera-RGB" in data
 
         image = data["camera-RGB"]
-        assert image.shape == (4, 4, 3)
+        assert image.shape == (3, 4, 4)
         # cannot check the exact value because of the compression
 
 
@@ -106,7 +106,7 @@ def test_dataset_getitem_png_rgb(create_dataset_png_rgb):
         assert "camera-RGB" in data
 
         image = data["camera-RGB"]
-        assert image.shape == (4, 4, 3)
+        assert image.shape == (3, 4, 4)
         assert image[0, 0, 0] == i * 10
         # cannot check the exact value because of the compression
 
@@ -124,7 +124,7 @@ def test_dataset_getitem_jpg_gray(create_dataset_jpg_gray):
         assert "camera-RGB" in data
 
         image = data["camera-RGB"]
-        assert image.shape == (4, 4, 1)
+        assert image.shape == (1, 4, 4)
 
 
 def test_dataset_getitem_png_gray(create_dataset_png_gray):
@@ -140,5 +140,5 @@ def test_dataset_getitem_png_gray(create_dataset_png_gray):
         assert "camera-RGB" in data
 
         image = data["camera-RGB"]
-        assert image.shape == (4, 4, 1)
+        assert image.shape == (1, 4, 4)
         assert image[0, 0, 0] == i * 10

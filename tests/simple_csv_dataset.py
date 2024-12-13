@@ -1,8 +1,13 @@
-from src.synaesthesia.base_sensors.csv_dataset import CsvDataset
+from pathlib import Path
+
 from src.synaesthesia.abstract.conversion import convert_to_timestamp
+from src.synaesthesia.base_sensors.csv_dataset import CsvDataset
 
 
 class SimpleCsvDataset(CsvDataset):
+    def __init__(self, path: str | Path, cols: list[str] | str | None = None):
+        super().__init__(path, cols, ",")
+
     @property
     def id(self):
         return "CSV"
