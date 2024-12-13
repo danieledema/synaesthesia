@@ -1,7 +1,6 @@
 [project]
 name = "synaesthesia"
 version = "0.1.0"
-authors = ["Daniele De Martini"]
 description = "General data pipeline for pytorch lightning"
 readme = "README.md"
 requires-python = ">=3.12"
