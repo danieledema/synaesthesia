@@ -15,7 +15,6 @@ def create_dataset_png_rgb():
     folder.mkdir(parents=True, exist_ok=True)
 
     for i in range(10):
-
         image = np.zeros((4, 4, 3), dtype=np.uint8)
         image[:, :, 0] = i * 10
 
@@ -31,7 +30,6 @@ def create_dataset_jpg_rgb():
     folder.mkdir(parents=True, exist_ok=True)
 
     for i in range(10):
-
         image = np.zeros((4, 4, 3), dtype=np.uint8)
         image[:, :, 0] = i * 10
 
@@ -47,7 +45,6 @@ def create_dataset_png_gray():
     folder.mkdir(parents=True, exist_ok=True)
 
     for i in range(10):
-
         image = np.zeros((4, 4), dtype=np.uint8)
         image[:, :] = i * 10
 
@@ -63,7 +60,6 @@ def create_dataset_jpg_gray():
     folder.mkdir(parents=True, exist_ok=True)
 
     for i in range(10):
-
         image = np.zeros((4, 4), dtype=np.uint8)
         image[:, :] = i * 10
 

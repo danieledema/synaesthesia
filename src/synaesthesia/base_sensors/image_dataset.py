@@ -1,12 +1,12 @@
 from pathlib import Path
 from typing import Any
 
+import cv2
 import numpy as np
 from PIL import Image
-import cv2
 
-from .multi_file_dataset import MultiFileDataset
 from ..abstract.dataset_base import DatasetBase
+from .multi_file_dataset import MultiFileDataset
 
 
 class ImageDataset(MultiFileDataset):
@@ -97,7 +97,7 @@ class ImageFromVideoDataset(DatasetBase):
         if len(frame.shape) == 3:
             frame = frame.transpose(2, 0, 1)
 
-        return { "RGB": frame }
+        return {"RGB": frame}
 
     @property
     def sensor_ids(self) -> list[str]:

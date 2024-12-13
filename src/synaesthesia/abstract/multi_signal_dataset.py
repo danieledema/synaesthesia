@@ -63,7 +63,6 @@ class MultiSignalDataset(DatasetBase):
                     total=len(merged_timestamps) + len(timestmaps_to_merge)
                 ) as pbar:
                     while i < len(merged_timestamps) and j < len(timestmaps_to_merge):
-
                         if tmp_merged_timestamps[-1] == merged_timestamps[i]:
                             i += 1
                             pbar.update(1)
