@@ -1,9 +1,11 @@
-import pytest
 from pathlib import Path
-from synaesthesia.abstract.concat_dataset import CustomConcatDataset
-from .simple_csv_dataset import SimpleCsvDataset
-import numpy as np
 
+import numpy as np
+import pytest
+
+from src.synaesthesia.abstract.concat_dataset import CustomConcatDataset
+
+from .simple_csv_dataset import SimpleCsvDataset
 
 # Determine the path to the directory of the current script
 BASE_DIR = Path(__file__).resolve().parent

@@ -1,5 +1,6 @@
 import pytest
-from synaesthesia.utils import check_camel_case_format
+
+from src.synaesthesia.utils import check_camel_case_format
 
 
 # Test for valid camel case strings

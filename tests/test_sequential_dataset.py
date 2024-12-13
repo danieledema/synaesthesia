@@ -1,9 +1,12 @@
-import pytest
-from pathlib import Path
-from src.synaesthesia.abstract.sequential_dataset import SequentialDataset
-from .simple_csv_dataset import SimpleCsvDataset
-from src.synaesthesia.abstract.filter_functions import SkipNFilter
 from datetime import datetime
+from pathlib import Path
+
+import pytest
+
+from src.synaesthesia.abstract.filter_functions import SkipNFilter
+from src.synaesthesia.abstract.sequential_dataset import SequentialDataset
+
+from .simple_csv_dataset import SimpleCsvDataset
 
 # Determine the path to the directory of the current script
 BASE_DIR = Path(__file__).resolve().parent
