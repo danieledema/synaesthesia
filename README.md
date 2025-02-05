@@ -12,7 +12,7 @@ This library provides a flexible and modular approach to creating datasets and d
 
 - **Modular Design** 🧩: Easily combine different dataset types and operations.
 - **Multi-modal Support** 🎛️: Handle various sensor modalities and information types.
-- **Flexible Combinations** 🔗: 
+- **Flexible Combinations** 🔗:
   - Parallel combination of datasets (MultiSignalDataset)
   - Serial concatenation of datasets (ConcatDataset)
   - Sequential data retrieval (SequentialDataset)
@@ -21,16 +21,10 @@ This library provides a flexible and modular approach to creating datasets and d
 
 ## Installation 💻
 
-The easiest way of using Synaesthesia is to clone it as a submodule of your system:
+The easiest way of using Synaesthesia is to installe it via `pip`, or, like here, `uv`:
 
 ```bash
-git submodule add git@github.com:danieledema/synaesthesia.git .submodules/synaesthesia
-```
-
-Then, use `poetry` to manage the required packages by including the submodule in the installation path:
-
-```bash
-poetry add .submodules/synaesthesia
+uv add synaesthesia
 ```
 
 ## Main Components 🧱

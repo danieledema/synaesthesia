@@ -1,7 +1,25 @@
 Installation
 ============
 
-As it is still in heavy development, to install Synaesthesia, we currently support only the installation through a submodule.
+You can install Synaesthesia in three different ways:
+
+1. Using `pip` (or like here `uv`)
+
+.. code-block:: bash
+
+    uv add synaesthesia
+
+2. Installing from source
+
+.. code-block:: bash
+
+    git clone git@github.com:danieledema/synaesthesia.git
+    cd synaesthesia
+    uv build
+
+and then you can install the package you can find in the `dist` folder:
+
+3. Using Synaesthesia as a submodule
 
 To install Synaesthesia, you can run the following command:
 .. code-block:: bash
