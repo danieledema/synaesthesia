@@ -1,6 +1,8 @@
 Welcome to Synaeshesia's documentation!
 ===================================
 
+*Create general PyTorch data pipelines from simple Python, extendable to any sensors.*
+
 **Synaeshesia** Synaesthesia is a Python library that forms the foundation of a dataset stack in any PyTorch/PyTorch Lightning projects.
 It contains base datasets and structures that enable combination, sequencing, concatenation, and other transformations through composition mechanisms.
 
@@ -18,5 +20,7 @@ Contents
 --------
 
 .. toctree::
+   :caption: GET STARTED
+   :hidden:
 
-   usage
+   get-started/installation
