@@ -21,6 +21,5 @@ Contents
 
 .. toctree::
    :caption: GET STARTED
-   :hidden:
 
    get-started/installation
