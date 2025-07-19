@@ -121,9 +121,9 @@ def test_dataset_getitem_jpg_gray(create_dataset_jpg_gray):
 
         assert data["idx"] == i
         assert data["timestamp"] == i
-        assert "camera-RGB" in data
+        assert "camera-L" in data
 
-        image = data["camera-RGB"]
+        image = data["camera-L"]
         assert image.shape == (1, 4, 4)
 
 
@@ -137,8 +137,8 @@ def test_dataset_getitem_png_gray(create_dataset_png_gray):
 
         assert data["idx"] == i
         assert data["timestamp"] == i
-        assert "camera-RGB" in data
+        assert "camera-L" in data
 
-        image = data["camera-RGB"]
+        image = data["camera-L"]
         assert image.shape == (1, 4, 4)
         assert image[0, 0, 0] == i * 10
