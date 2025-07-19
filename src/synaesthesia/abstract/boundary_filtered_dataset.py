@@ -28,9 +28,6 @@ class BoundaryFilteredDataset(DatasetBase):
         self.dataset = dataset
         self.boundaries = boundaries
 
-        print("Initializing BoundaryFilteredDataset.")
-        print(f"Boundaries: {self.boundaries}")
-
         # Build filtered indices once during initialization
         self._build_filtered_indices()
 
@@ -57,10 +54,6 @@ class BoundaryFilteredDataset(DatasetBase):
         # Build bidirectional index mappings
         self.fwd_indices = {i: idx for i, idx in enumerate(valid_indices)}
         self.bwd_indices = {idx: i for i, idx in enumerate(valid_indices)}
-
-        print(
-            f"Filtered dataset: {len(valid_indices)} samples from {len(timestamps)} original samples"
-        )
 
     def _filter_indices_vectorized(
         self, timestamps: np.ndarray, boundaries_dt: List[Tuple[Any, Any]]
