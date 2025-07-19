@@ -70,7 +70,7 @@ class BoundaryFilteredDataset(DatasetBase):
 
         for start_time, end_time in boundaries_dt:
             # Create mask for current boundary
-            boundary_mask = (timestamps > start_time) & (timestamps < end_time)
+            boundary_mask = (timestamps >= start_time) & (timestamps < end_time)
             mask |= boundary_mask
 
         return np.where(mask)[0].tolist()
@@ -83,7 +83,7 @@ class BoundaryFilteredDataset(DatasetBase):
 
         for i, timestamp in enumerate(tqdm(timestamps, desc="Filtering timestamps")):
             for start_time, end_time in boundaries_dt:
-                if start_time < timestamp < end_time:
+                if start_time <= timestamp < end_time:
                     valid_indices.append(i)
                     break  # No need to check other boundaries for this timestamp
 
