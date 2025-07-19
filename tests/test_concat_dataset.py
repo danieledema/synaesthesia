@@ -42,10 +42,10 @@ def test_custom_concat_dataset_length(datasets, custom_concat_dataset):
 
 
 def test_custom_concat_dataset_get_data(datasets, custom_concat_dataset):
-    # Test getting data from the concatenated dataset
+    # Test getting data from the first dataset
     index_1 = 5
     expected_data = datasets[0].get_data(index_1)
-    actual_data = custom_concat_dataset.get_data(len(datasets[0]) + index_1)
+    actual_data = custom_concat_dataset.get_data(index_1)
     assert np.array_equal(
         actual_data["random_integer1"], expected_data["random_integer1"]
     ), "Mismatch in random_integer1"
@@ -53,6 +53,7 @@ def test_custom_concat_dataset_get_data(datasets, custom_concat_dataset):
         actual_data["index_1.5"], expected_data["index_1.5"]
     ), "Mismatch in index_1.5"
 
+    # Test getting data from the second dataset
     index_2 = 2
     expected_data = datasets[1].get_data(index_2)
     actual_data = custom_concat_dataset.get_data(len(datasets[0]) + index_2)
@@ -65,35 +66,30 @@ def test_custom_concat_dataset_get_data(datasets, custom_concat_dataset):
 
 
 def test_custom_concat_dataset_get_timestamp(datasets, custom_concat_dataset):
-    # Test getting timestamp from the concatenated dataset
+    # Test getting timestamp from the first dataset
     index_1 = 5
-    expected_timestamp = datasets[0].get_timestamp(
-        index_1
-    )  # Get timestamp from first dataset
+    expected_timestamp = datasets[0].get_timestamp(index_1)
     actual_timestamp = custom_concat_dataset.get_timestamp(index_1)
     assert (
         actual_timestamp == expected_timestamp
-    ), f"Timestamp mismatch at index 5: expected {expected_timestamp}, got {actual_timestamp}"
+    ), f"Timestamp mismatch at index {index_1}: expected {expected_timestamp}, got {actual_timestamp}"
 
+    # Test getting timestamp from the second dataset
     index_2 = 2
-    expected_timestamp = datasets[1].get_timestamp(
-        2
-    )  # Get timestamp from second dataset
-    actual_timestamp = custom_concat_dataset.get_timestamp(
-        len(datasets[0]) + index_2
-    )  # Corresponding index
+    expected_timestamp = datasets[1].get_timestamp(index_2)
+    actual_timestamp = custom_concat_dataset.get_timestamp(len(datasets[0]) + index_2)
     assert (
         actual_timestamp == expected_timestamp
-    ), f"Timestamp mismatch at index 32: expected {expected_timestamp}, got {actual_timestamp}"
+    ), f"Timestamp mismatch at index {len(datasets[0]) + index_2}: expected {expected_timestamp}, got {actual_timestamp}"
 
 
 def test_custom_concat_dataset_find_right_dataset(custom_concat_dataset):
-    # Test finding the right dataset and index
-    i, idx = custom_concat_dataset.find_right_datset(5)
-    assert i == 0 and idx == 5, "Expected to find index 5 in dataset 0"
+    # Test finding the right dataset and index - using the correct method name
+    dataset_idx, local_idx = custom_concat_dataset._find_dataset_and_index(5)
+    assert dataset_idx == 0 and local_idx == 5, "Expected to find index 5 in dataset 0"
 
-    i, idx = custom_concat_dataset.find_right_datset(32)
-    assert i == 1 and idx == 2, "Expected to find index 2 in dataset 1"
+    dataset_idx, local_idx = custom_concat_dataset._find_dataset_and_index(32)
+    assert dataset_idx == 1 and local_idx == 2, "Expected to find index 2 in dataset 1"
 
 
 def test_custom_concat_dataset_repr(custom_concat_dataset):
@@ -104,9 +100,21 @@ def test_custom_concat_dataset_repr(custom_concat_dataset):
 
 
 def test_custom_concat_dataset_negative_index(custom_concat_dataset):
+    # Test negative indexing
     index = -1
     expected_data = custom_concat_dataset.get_data(len(custom_concat_dataset) - 1)
     actual_data = custom_concat_dataset.get_data(index)
     assert np.array_equal(
         actual_data["random_integer1"], expected_data["random_integer1"]
-    ), "Mismatch in random_integer1"
+    ), "Mismatch in random_integer1 for negative index"
+    assert np.isclose(
+        actual_data["index_1.5"], expected_data["index_1.5"]
+    ), "Mismatch in index_1.5 for negative index"
+
+
+def test_custom_concat_dataset_idx_in_data(custom_concat_dataset):
+    # Test that the global index is included in the data
+    index = 15
+    data = custom_concat_dataset.get_data(index)
+    assert "idx" in data, "Global index 'idx' should be included in data"
+    assert data["idx"] == index, f"Expected idx to be {index}, got {data['idx']}"

@@ -4,9 +4,9 @@ from pathlib import Path
 import pytest
 
 from src.synaesthesia.abstract.filter_functions import SkipNFilter
-from src.synaesthesia.abstract.sequential_dataset import SequentialDataset
 
 from .simple_csv_dataset import SimpleCsvDataset
+from .test_utils import CustomSequentialSignalDataset
 
 # Determine the path to the directory of the current script
 BASE_DIR = Path(__file__).resolve().parent
@@ -82,7 +82,7 @@ def test_sequential_dataset_data_values(common_setup, ground_truth_data):
     dataset, skip_filter = common_setup
 
     # Initialize SequentialDataset with the SkipNFilter, stride=3, and timestamp_idx set to "first"
-    sensor_dataset = SequentialDataset(
+    sensor_dataset = CustomSequentialSignalDataset(
         dataset,
         n_samples=3,  # Set n_samples to 3
         filter=skip_filter,
@@ -104,7 +104,7 @@ def test_sequential_dataset_timestamp_indexing(common_setup, expected_timestamps
 
     for timestamp_idx, expected_timestamps_for_idx in expected_timestamps.items():
         # Initialize SequentialDataset with the SkipNFilter, stride=3, and timestamp_idx
-        sensor_dataset = SequentialDataset(
+        sensor_dataset = CustomSequentialSignalDataset(
             dataset,
             n_samples=3,  # Set n_samples to 3
             filter=skip_filter,
@@ -126,7 +126,7 @@ def test_sequential_dataset_length(common_setup):
     dataset, skip_filter = common_setup
 
     # Initialize SequentialDataset with the SkipNFilter, stride=3, and timestamp_idx
-    sensor_dataset = SequentialDataset(
+    sensor_dataset = CustomSequentialSignalDataset(
         dataset,
         n_samples=3,  # Set n_samples to 3
         filter=skip_filter,
@@ -144,7 +144,7 @@ def test_sequential_dataset_idxs(common_setup):
     dataset, skip_filter = common_setup
 
     # Initialize SequentialDataset with different parameters
-    sensor_dataset = SequentialDataset(
+    sensor_dataset = CustomSequentialSignalDataset(
         dataset,
         n_samples=3,  # Set n_samples to 3
         filter=skip_filter,

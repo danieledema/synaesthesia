@@ -1,8 +1,9 @@
 import pytest
+
 from src.synaesthesia.abstract.filter_functions import (
-    SkipNFilter,
-    MultipleNFilter,
     ExponentialFilter,
+    MultipleNFilter,
+    SkipNFilter,
 )
 
 

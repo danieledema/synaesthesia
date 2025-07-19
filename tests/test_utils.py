@@ -1,5 +1,7 @@
 import pytest
 
+from src.synaesthesia.abstract.multi_signal_dataset import MultiSignalDataset
+from src.synaesthesia.abstract.sequential_dataset import SequentialDataset
 from src.synaesthesia.utils import check_camel_case_format
 
 
@@ -33,3 +35,13 @@ def test_invalid_camel_case():
     for string in invalid_strings:
         with pytest.raises(ValueError, match=f"'{string}' is not in camel case format"):
             check_camel_case_format(string)
+
+
+class CustomMultiSignalDataset(MultiSignalDataset):
+    def get_machine_name(self) -> str:
+        return "ciao"
+
+
+class CustomSequentialSignalDataset(SequentialDataset):
+    def get_machine_name(self) -> str:
+        return "ciao"
