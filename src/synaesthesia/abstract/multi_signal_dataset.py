@@ -1,9 +1,27 @@
-from typing import List
+import bisect
+from enum import Enum
+from typing import Any, Dict, List, Optional
 
 from loguru import logger
 from tqdm import tqdm
 
 from .dataset_base import DatasetBase
+
+
+class AggregationMethod(Enum):
+    """Enumeration for aggregation methods."""
+
+    ALL = "all"
+    COMMON = "common"
+    INDEX = "I:"  # Will be handled specially for I:<idx> pattern
+
+
+class FillMethod(Enum):
+    """Enumeration for fill methods."""
+
+    NONE = "none"
+    LAST = "last"
+    CLOSEST = "closest"
 
 
 class MultiSignalDataset(DatasetBase):
@@ -23,12 +41,16 @@ class MultiSignalDataset(DatasetBase):
         Initializes the MultiSignalDataset.
 
         Args:
-            single_signal_datasets (list): List of DatasetBase objects representing single signal datasets.
-            aggregation (str): Aggregation method for timestamps ("all", "common", "I:<idx>").
-            fill (str): Method for filling missing timestamps ("none", "last", "closest").
-            time_cut (int): Time cut-off in minutes for "closest" fill method.
+            single_signal_datasets: List of DatasetBase objects representing single signal datasets.
+            aggregation: Aggregation method for timestamps ("all", "common", "I:<idx>").
+            fill: Method for filling missing timestamps ("none", "last", "closest").
+            time_cut: Time cut-off in minutes for "closest" fill method.
+            return_indices: Whether to return dataset indices in the output.
         """
         super().__init__()
+
+        if not single_signal_datasets:
+            raise ValueError("At least one dataset must be provided")
 
         self.single_signal_datasets = single_signal_datasets
         self.aggregation = aggregation
@@ -36,240 +58,302 @@ class MultiSignalDataset(DatasetBase):
         self.time_cut = time_cut
         self.return_indices = return_indices
 
-        # Create a DataFrame to store timestamps and corresponding indices
+        # Validate inputs
+        self._validate_inputs()
+
+        # Initialize timestamps and data mapping
         logger.info("Initializing timestamps...")
         self._timestamps = self._initialize_timestamps()
 
         logger.info("Initializing data dictionary...")
         self.data_dict = self._initialize_data_dict()
 
-    def _initialize_timestamps(self) -> list[int]:
-        """
-        Initializes the DataFrame to store timestamps and corresponding indices.
-        """
+        # Create timestamp lookup for O(log n) access
+        self._timestamp_to_idx = {ts: idx for idx, ts in enumerate(self._timestamps)}
 
+    def _validate_inputs(self) -> None:
+        """Validate input parameters."""
+        # Validate aggregation method
+        if self.aggregation not in [
+            "all",
+            "common",
+        ] and not self.aggregation.startswith("I:"):
+            raise ValueError(f"Invalid aggregation method: {self.aggregation}")
+
+        if self.aggregation.startswith("I:"):
+            try:
+                idx = int(self.aggregation[2:])
+                if idx < 0 or idx >= len(self.single_signal_datasets):
+                    raise ValueError(f"Dataset index {idx} out of range")
+            except ValueError as e:
+                if "invalid literal" in str(e):
+                    raise ValueError(
+                        f"Invalid index format in aggregation: {self.aggregation}"
+                    )
+                raise
+
+        # Validate fill method
+        if self.fill not in ["none", "last", "closest"]:
+            raise ValueError(f"Invalid fill method: {self.fill}")
+
+    def _initialize_timestamps(self) -> List[int]:
+        """Initialize timestamps based on aggregation method."""
         if self.aggregation == "all":
-            merged_timestamps = self.single_signal_datasets[0].timestamps
-
-            for ds in tqdm(self.single_signal_datasets[1:], desc="Merging timestamps"):
-                i, j = 0, 0
-
-                timestmaps_to_merge = ds.timestamps
-                tmp_merged_timestamps = [
-                    min(merged_timestamps[0], timestmaps_to_merge[0])
-                ]
-
-                with tqdm(
-                    total=len(merged_timestamps) + len(timestmaps_to_merge)
-                ) as pbar:
-                    while i < len(merged_timestamps) and j < len(timestmaps_to_merge):
-                        if tmp_merged_timestamps[-1] == merged_timestamps[i]:
-                            i += 1
-                            pbar.update(1)
-                            continue
-
-                        if tmp_merged_timestamps[-1] == timestmaps_to_merge[j]:
-                            j += 1
-                            pbar.update(1)
-                            continue
-
-                        if merged_timestamps[i] < timestmaps_to_merge[j]:
-                            tmp_merged_timestamps.append(merged_timestamps[i])
-                            i += 1
-                        else:
-                            tmp_merged_timestamps.append(timestmaps_to_merge[j])
-                            j += 1
-                        pbar.update(1)
-
-                # Append any remaining elements from list1 or list2
-                tmp_merged_timestamps.extend(merged_timestamps[i:])
-                tmp_merged_timestamps.extend(timestmaps_to_merge[j:])
-                merged_timestamps = tmp_merged_timestamps
-
-            return merged_timestamps
-
+            return self._merge_all_timestamps()
         elif self.aggregation == "common":
-            merged_timestamps = self.single_signal_datasets[0].timestamps
-
-            for ds in tqdm(self.single_signal_datasets[1:], desc="Merging timestamps"):
-                to_delete = []
-
-                with tqdm(total=len(merged_timestamps)) as pbar:
-                    i, j = 0, 0
-                    while i < len(merged_timestamps) and j < len(ds):
-                        if merged_timestamps[i] == ds.get_timestamp(j):
-                            i += 1
-                            j += 1
-                        elif merged_timestamps[i] < ds.get_timestamp(j):
-                            to_delete.append(i)
-                            i += 1
-                        else:
-                            j += 1
-                        pbar.update(1)
-
-                merged_timestamps = [
-                    timestamp
-                    for i, timestamp in enumerate(merged_timestamps)
-                    if i not in to_delete
-                ]
-
-            return merged_timestamps
-
+            return self._find_common_timestamps()
         elif self.aggregation.startswith("I:"):
-            # For 'I:<idx>' aggregation, mark timestamps from a specific dataset
             idx = int(self.aggregation[2:])
-            return self.single_signal_datasets[idx].timestamps
-
+            return self.single_signal_datasets[idx].timestamps.copy()
         else:
             raise ValueError(f"Invalid aggregation method: {self.aggregation}")
 
-    def _initialize_data_dict(self) -> dict[int, list[int | None]]:
-        """
-        Fills data vs timestamps based on the specified fill method.
-        """
+    def _merge_all_timestamps(self) -> List[int]:
+        """Efficiently merge all timestamps from all datasets."""
+        all_timestamps = set()
 
+        for ds in tqdm(self.single_signal_datasets, desc="Collecting timestamps"):
+            all_timestamps.update(ds.timestamps)
+
+        return sorted(all_timestamps)
+
+    def _find_common_timestamps(self) -> List[int]:
+        """Find timestamps common to all datasets."""
+        if not self.single_signal_datasets:
+            return []
+
+        # Start with first dataset's timestamps as a set
+        common_timestamps = set(self.single_signal_datasets[0].timestamps)
+
+        # Intersect with each subsequent dataset
+        for ds in tqdm(
+            self.single_signal_datasets[1:], desc="Finding common timestamps"
+        ):
+            ds_timestamps = set(ds.timestamps)
+            common_timestamps &= ds_timestamps
+
+        return sorted(common_timestamps)
+
+    def _initialize_data_dict(self) -> Dict[int, List[Optional[int]]]:
+        """Initialize data dictionary mapping timestamps to dataset indices."""
+        # Initialize with None values
         data_dict = {
-            t: [None] * len(self.single_signal_datasets) for t in self.timestamps
+            timestamp: [None] * len(self.single_signal_datasets)
+            for timestamp in self._timestamps
         }
-        for i, ds in tqdm(enumerate(self.single_signal_datasets), desc="Filling:"):
-            for j, timestamp in tqdm(enumerate(ds.timestamps), desc=f"Dataset: {i}"):
-                if timestamp in data_dict:
-                    data_dict[timestamp][i] = j
 
+        # Fill in actual indices where data exists
+        for ds_idx, ds in enumerate(
+            tqdm(self.single_signal_datasets, desc="Mapping data indices")
+        ):
+            # Create timestamp to index mapping for this dataset
+            ds_timestamp_to_idx = {ts: idx for idx, ts in enumerate(ds.timestamps)}
+
+            for timestamp in self._timestamps:
+                if timestamp in ds_timestamp_to_idx:
+                    data_dict[timestamp][ds_idx] = ds_timestamp_to_idx[timestamp]
+
+        # Apply fill method
+        return self._apply_fill_method(data_dict)
+
+    def _apply_fill_method(
+        self, data_dict: Dict[int, List[Optional[int]]]
+    ) -> Dict[int, List[Optional[int]]]:
+        """Apply the specified fill method to handle missing data."""
         if self.fill == "none":
             return data_dict
-
         elif self.fill == "last":
-            min_common_timestamp = max(
-                [ds.get_timestamp(0) for ds in self.single_signal_datasets]
-            )
-            for i in tqdm(range(len(self.timestamps)), desc="Filling:"):
-                if self.timestamps[i] < min_common_timestamp:
-                    data_dict[self.timestamps[i + 1]] = data_dict[self.timestamps[i]]
-                    del data_dict[self.timestamps[i]]
-                    del self.timestamps[i]
-
-            for i, ds in tqdm(enumerate(self.single_signal_datasets), desc="Filling:"):
-                for j, timestamp in tqdm(enumerate(self.timestamps)):
-                    if data_dict[timestamp][i] is None:
-                        data_dict[timestamp][i] = data_dict[self.timestamps[j - 1]][i]
-
-            return data_dict
-
+            return self._apply_last_fill(data_dict)
         elif self.fill == "closest":
-            for i, ds in tqdm(enumerate(self.single_signal_datasets), desc="Filling:"):
-                global_timestamp_idx, ds_timestamp_idx = 0, 1
+            return self._apply_closest_fill(data_dict)
+        else:
+            raise ValueError(f"Unknown fill method: {self.fill}")
 
-                while global_timestamp_idx < len(self.timestamps):
-                    timestamps_to_fill = self.timestamps[global_timestamp_idx]
+    def _apply_last_fill(
+        self, data_dict: Dict[int, List[Optional[int]]]
+    ) -> Dict[int, List[Optional[int]]]:
+        """Apply last-value-carried-forward fill method."""
+        # Find minimum common timestamp
+        min_common_timestamp = max(
+            ds.get_timestamp(0) for ds in self.single_signal_datasets
+        )
 
-                    while (
-                        ds.get_timestamp(ds_timestamp_idx - 1) < timestamps_to_fill
-                        and ds.get_timestamp(ds_timestamp_idx) < timestamps_to_fill
-                        and ds_timestamp_idx < len(ds) - 1
-                    ):
-                        ds_timestamp_idx += 1
+        # Filter timestamps to start from min_common_timestamp
+        valid_timestamps = [ts for ts in self._timestamps if ts >= min_common_timestamp]
+        self._timestamps = valid_timestamps
 
-                    if abs(
-                        ds.get_timestamp(ds_timestamp_idx - 1) - timestamps_to_fill
-                    ) < abs(ds.get_timestamp(ds_timestamp_idx) - timestamps_to_fill):
-                        data_dict[timestamps_to_fill][i] = ds_timestamp_idx - 1
-                    else:
-                        data_dict[timestamps_to_fill][i] = ds_timestamp_idx
+        # Rebuild data_dict with filtered timestamps
+        filtered_data_dict = {ts: data_dict[ts] for ts in valid_timestamps}
 
-                    global_timestamp_idx += 1
+        # Forward fill missing values for each dataset
+        for ds_idx in range(len(self.single_signal_datasets)):
+            last_valid_idx = None
+            for timestamp in valid_timestamps:
+                if filtered_data_dict[timestamp][ds_idx] is not None:
+                    last_valid_idx = filtered_data_dict[timestamp][ds_idx]
+                elif last_valid_idx is not None:
+                    filtered_data_dict[timestamp][ds_idx] = last_valid_idx
 
-            return data_dict
+        return filtered_data_dict
+
+    def _apply_closest_fill(
+        self, data_dict: Dict[int, List[Optional[int]]]
+    ) -> Dict[int, List[Optional[int]]]:
+        """Apply closest-value fill method."""
+        for ds_idx, ds in enumerate(
+            tqdm(self.single_signal_datasets, desc="Applying closest fill")
+        ):
+            ds_timestamps = ds.timestamps
+
+            for timestamp in self._timestamps:
+                if data_dict[timestamp][ds_idx] is None:
+                    # Find closest timestamp using binary search
+                    closest_idx = self._find_closest_timestamp_idx(
+                        timestamp, ds_timestamps
+                    )
+
+                    # Check if within time_cut threshold
+                    closest_timestamp = ds_timestamps[closest_idx]
+                    time_diff_minutes = abs(timestamp - closest_timestamp) / (
+                        60 * 1000
+                    )  # Assuming milliseconds
+
+                    if time_diff_minutes <= self.time_cut:
+                        data_dict[timestamp][ds_idx] = closest_idx
+
+        return data_dict
+
+    def _find_closest_timestamp_idx(
+        self, target_timestamp: int, timestamps: List[int]
+    ) -> int:
+        """Find the index of the closest timestamp using binary search."""
+        if not timestamps:
+            raise ValueError("Empty timestamp list")
+
+        # Use binary search to find insertion point
+        idx = bisect.bisect_left(timestamps, target_timestamp)
+
+        # Handle edge cases
+        if idx == 0:
+            return 0
+        if idx == len(timestamps):
+            return len(timestamps) - 1
+
+        # Compare distances to adjacent timestamps
+        left_dist = abs(target_timestamp - timestamps[idx - 1])
+        right_dist = abs(target_timestamp - timestamps[idx])
+
+        return idx - 1 if left_dist <= right_dist else idx
 
     @property
     def timestamps(self) -> List[int]:
-        """
-        Returns the list of timestamps in numpy.datetime64 format.
-        """
+        """Returns the list of timestamps."""
         return self._timestamps
 
     def __len__(self) -> int:
-        """
-        Returns the number of timestamps.
-        """
-        return len(self.timestamps)
+        """Returns the number of timestamps."""
+        return len(self._timestamps)
 
-    def get_data(self, idx: int) -> dict:
+    def get_data(self, idx: int) -> Dict[str, Any]:
         """
         Retrieves the data at the specified index.
 
         Args:
-            idx (int): Index of the timestamp.
+            idx: Index of the timestamp.
 
         Returns:
-            dict: Dictionary containing data from all datasets at the specified timestamp.
+            Dictionary containing data from all datasets at the specified timestamp.
         """
-        data_slice = self.data_dict[self.timestamps[idx]]
-        data_dict = {}
-        for i, ds in enumerate(self.single_signal_datasets):
-            if data_slice[i] is None:
-                for k in ds.sensor_ids:
-                    data_dict[f"{ds.machine_name}_{ds.id}-{k}"] = None
+        if idx < 0 or idx >= len(self._timestamps):
+            raise IndexError(f"Index {idx} out of range")
+
+        timestamp = self._timestamps[idx]
+        data_indices = self.data_dict[timestamp]
+        result_data = {}
+
+        for ds_idx, ds in enumerate(self.single_signal_datasets):
+            data_idx = data_indices[ds_idx]
+            key_prefix = f"{ds.machine_name}_{ds.id}"
+
+            if data_idx is None:
+                # Add None values for all sensor IDs
+                for sensor_id in ds.sensor_ids:
+                    result_data[f"{key_prefix}-{sensor_id}"] = None
             else:
-                data = ds.get_data(data_slice[i])
+                # Get actual data
+                ds_data = ds.get_data(data_idx)
+                for key, value in ds_data.items():
+                    result_data[f"{key_prefix}-{key}"] = value
 
-                for k in data:
-                    data_dict[f"{ds.machine_name}_{ds.id}-{k}"] = data[k]
+            # Add index if requested
+            if self.return_indices:
+                result_data[f"{key_prefix}-index"] = data_idx
 
-                if self.return_indices:
-                    data_dict[f"{ds.machine_name}_{ds.id}-index"] = data_slice[i]
-
-        return data_dict
+        return result_data
 
     def get_timestamp(self, idx: int) -> int:
         """
         Retrieves the timestamp at the specified index.
 
         Args:
-            idx (int): Index of the timestamp.
+            idx: Index of the timestamp.
 
         Returns:
-            int: Timestamp at the specified index.
+            Timestamp at the specified index.
         """
-        return self.timestamps[idx]
+        if idx < 0 or idx >= len(self._timestamps):
+            raise IndexError(f"Index {idx} out of range")
+        return self._timestamps[idx]
 
     def get_timestamp_idx(self, timestamp: int) -> int:
         """
         Retrieves the index of the specified timestamp.
 
         Args:
-            timestamp (pd.Timestamp): Timestamp to find the index for.
+            timestamp: Timestamp to find the index for.
 
         Returns:
-            int: Index of the specified timestamp.
+            Index of the specified timestamp.
+
+        Raises:
+            ValueError: If timestamp is not found.
         """
-        return self.timestamps.index(timestamp)
+        if timestamp not in self._timestamp_to_idx:
+            raise ValueError(f"Timestamp {timestamp} not found in dataset")
+        return self._timestamp_to_idx[timestamp]
 
     def __repr__(self) -> str:
-        """
-        Returns a string representation of the MultiSignalDataset object.
-        """
-        print_string = f"MultiSignalDataset - {len(self)} samples\nDatasets: {len(self.single_signal_datasets)}\n"
-        for i, d in enumerate(self.single_signal_datasets):
-            inner_repr = repr(d)
-            lines = inner_repr.split("\n")
-            inner_repr = "\n".join(["\t" + line for line in lines])
+        """Returns a string representation of the MultiSignalDataset object."""
+        lines = [
+            f"MultiSignalDataset - {len(self)} samples",
+            f"Aggregation: {self.aggregation}, Fill: {self.fill}",
+            f"Datasets: {len(self.single_signal_datasets)}",
+        ]
 
-            print_string += f"{i} -------------\n"
-            print_string += inner_repr
-        print_string += "\n------------------\n"
-        return print_string
+        for i, ds in enumerate(self.single_signal_datasets):
+            lines.append(f"{i} ----")
+            ds_repr = repr(ds)
+            # Indent each line of the dataset representation
+            indented_lines = [f"\t{line}" for line in ds_repr.split("\n")]
+            lines.extend(indented_lines)
+            lines.append("----")
+
+        return "\n".join(lines)
 
     @property
-    def id(self):
-        """
-        Returns the ID of the dataset.
-        """
+    def id(self) -> str:
+        """Returns the ID of the dataset."""
         return ""
 
     @property
-    def sensor_ids(self):
-        sids = []
+    def sensor_ids(self) -> List[str]:
+        """Returns a list of all sensor IDs from all datasets."""
+        sensor_ids = []
         for ds in self.single_signal_datasets:
-            sids += ds.sensor_ids
-        return sids
+            sensor_ids.extend(ds.sensor_ids)
+        return sensor_ids
+
+    def get_machine_name(self) -> str:
+        """Return a combined machine name from all datasets."""
+        machine_names = [ds.machine_name for ds in self.single_signal_datasets]
+        return "+".join(sorted(set(machine_names)))
