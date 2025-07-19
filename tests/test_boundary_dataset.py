@@ -198,7 +198,7 @@ def test_boundary_filtered_dataset_get_timestamp_idx_not_found(
     # Use a timestamp that's unlikely to exist
     fake_timestamp = "21000101T000000"
 
-    with pytest.raises(IndexError):
+    with pytest.raises(ValueError):
         boundary_filtered_dataset_single.get_timestamp_idx(fake_timestamp)
 
 
