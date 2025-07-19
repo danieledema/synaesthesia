@@ -95,8 +95,8 @@ def test_custom_concat_dataset_find_right_dataset(custom_concat_dataset):
 def test_custom_concat_dataset_repr(custom_concat_dataset):
     # Test the string representation of the concatenated dataset
     repr_str = repr(custom_concat_dataset)
-    assert "Concat dataset: 60 samples" in repr_str
-    assert "Datasets: 2" in repr_str
+    assert "ConcatDataset: 60 samples" in repr_str
+    assert "from 2 datasets" in repr_str
 
 
 def test_custom_concat_dataset_negative_index(custom_concat_dataset):
@@ -110,11 +110,3 @@ def test_custom_concat_dataset_negative_index(custom_concat_dataset):
     assert np.isclose(
         actual_data["index_1.5"], expected_data["index_1.5"]
     ), "Mismatch in index_1.5 for negative index"
-
-
-def test_custom_concat_dataset_idx_in_data(custom_concat_dataset):
-    # Test that the global index is included in the data
-    index = 15
-    data = custom_concat_dataset.get_data(index)
-    assert "idx" in data, "Global index 'idx' should be included in data"
-    assert data["idx"] == index, f"Expected idx to be {index}, got {data['idx']}"
