@@ -1,50 +1,86 @@
-from typing import Any
+from functools import cached_property
+from typing import Any, Dict, List
 
 from .dataset_base import DatasetBase
 
 
 class TimeOffsetDataset(DatasetBase):
-    def __init__(self, dataset: DatasetBase, time_offset: int):
+    """A dataset wrapper that applies a time offset to all timestamps.
+
+    This class wraps another dataset and adds a constant time offset to all
+    timestamp operations while preserving all other functionality.
+
+    Args:
+        dataset: The underlying dataset to wrap
+        time_offset: The time offset to add to all timestamps (in same units as dataset)
+    """
+
+    def __init__(self, dataset: DatasetBase, time_offset: int) -> None:
         super().__init__()
 
-        self.time_offset = time_offset
-        self.dataset = dataset
+        if not isinstance(dataset, DatasetBase):
+            raise TypeError("dataset must be an instance of DatasetBase")
+        if not isinstance(time_offset, int):
+            raise TypeError("time_offset must be an integer")
 
-    def __len__(self):
-        return len(self.dataset)
+        self._dataset = dataset
+        self._time_offset = time_offset
 
-    def get_data(self, idx) -> dict[str, Any]:
-        return self.dataset.get_data(idx)
+    def __len__(self) -> int:
+        """Return the number of samples in the dataset."""
+        return len(self._dataset)
 
-    def get_timestamp(self, idx) -> int:
-        return self.dataset.get_timestamp(idx) + self.time_offset
+    def get_data(self, idx: int) -> Dict[str, Any]:
+        """Get data at the specified index."""
+        return self._dataset.get_data(idx)
 
-    def get_timestamp_idx(self, timestamp) -> int:
-        return self.dataset.get_timestamp_idx(timestamp - self.time_offset)
+    def get_timestamp(self, idx: int) -> int:
+        """Get timestamp at the specified index with offset applied."""
+        return self._dataset.get_timestamp(idx) + self._time_offset
+
+    def get_timestamp_idx(self, timestamp: int) -> int:
+        """Get index for the given timestamp, accounting for offset."""
+        return self._dataset.get_timestamp_idx(timestamp - self._time_offset)
 
     @property
-    def sensor_ids(self) -> list[str]:
-        return self.dataset.sensor_ids
+    def sensor_ids(self) -> List[str]:
+        """Get list of sensor IDs from the underlying dataset."""
+        return self._dataset.sensor_ids
 
     @property
     def id(self) -> str:
-        return self.dataset.id
+        """Get the ID of the underlying dataset."""
+        return self._dataset.id
+
+    def get_machine_name(self) -> str:
+        """Get the machine name of the underlying dataset."""
+        return self._dataset.get_machine_name()
+
+    @cached_property
+    def timestamps(self) -> List[int]:
+        """Get all timestamps with offset applied.
+
+        Note: This creates a new list with offset applied to each timestamp.
+        Use sparingly for large datasets as it can be memory intensive.
+        """
+        return [ts + self._time_offset for ts in self._dataset.timestamps]
 
     @property
-    def machine_name(self) -> str:
-        return self.dataset.machine_name
-
-    @property
-    def timestamps(self) -> list[int]:
-        raise NotImplementedError
+    def time_offset(self) -> int:
+        """Get the time offset value."""
+        return self._time_offset
 
     def __repr__(self) -> str:
-        print_string = f"Time Offset dataset: {len(self)} samples\n"
-        print_string += f"Dataset:\n"
+        """Return a string representation of the dataset."""
+        lines = [
+            f"Time Offset dataset: {len(self)} samples",
+            f"Time offset: {self._time_offset}",
+            "Dataset:",
+        ]
 
-        inner_repr = repr(self.dataset)
-        lines = inner_repr.split("\n")
-        inner_repr = "\n".join(["\t" + line for line in lines])
+        # Indent the underlying dataset representation
+        inner_repr = repr(self._dataset)
+        indented_lines = [f"\t{line}" for line in inner_repr.split("\n")]
+        lines.extend(indented_lines)
 
-        print_string += inner_repr
-        return print_string
+        return "\n".join(lines)
