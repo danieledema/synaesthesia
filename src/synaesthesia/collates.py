@@ -22,8 +22,16 @@ class CollateBase:
         assert len(items_list) > 0, "items_list must have at least one item"
 
         if isinstance(items_list, list):
+            # Build the union of keys across all items in the batch so we don't
+            # raise KeyError when different items have different keys.
+            all_keys = set()
+            for it in items_list:
+                # ensure each element is a mapping-like object
+                if hasattr(it, "keys"):
+                    all_keys.update(it.keys())
+            # Use a deterministic ordering for keys to keep behavior stable
             items = {
-                key: [item[key] for item in items_list] for key in items_list[0].keys()
+                key: [item.get(key) for item in items_list] for key in sorted(all_keys)
             }
         else:
             items = items_list
@@ -41,14 +49,23 @@ class CollateBase:
         return items
 
     def match_keys(self, keys: list[str]) -> list[str]:
-        if not self.item_keys_cached:
-            for key in keys:
-                for item_key in self.item_keys:
-                    if re.match(item_key, key):
-                        self.item_keys_cached.append(key)
-                        break
+        """
+        Return the list of keys from `keys` that match any of the compiled
+        patterns in `self.item_keys`.
 
-        return self.item_keys_cached
+        Note: this performs matching on every call instead of caching results
+        across batches. Caching per-batch can be incorrect if the set of keys
+        changes between calls (e.g. dynamic dataset outputs). If caching is
+        desired for stable datasets, add an explicit option to enable it.
+        """
+        matched_keys: list[str] = []
+        for key in keys:
+            for item_key in self.item_keys:
+                if re.match(item_key, key):
+                    matched_keys.append(key)
+                    break
+
+        return matched_keys
 
     def do_collate(self, item: dict[str, Any]):
         raise NotImplementedError
@@ -80,9 +97,9 @@ class BatchCollate(CollateBase):
                 if not dims:
                     return items
 
-                assert all(
-                    dim == dims[0] for dim in dims
-                ), "All tensors must have the same shape"
+                assert all(dim == dims[0] for dim in dims), (
+                    "All tensors must have the same shape"
+                )
 
                 converted_items = [
                     (

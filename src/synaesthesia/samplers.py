@@ -5,20 +5,68 @@ from tqdm import tqdm
 
 
 def calculate_class_weights(dataloader: DataLoader, class_label: str, num_classes: int):
-    class_weights = [0] * num_classes
+    """
+    Compute per-sample weights (for WeightedRandomSampler) and per-class weights.
 
-    sample_weights = [0 for _ in range(len(dataloader.dataset))]
+    This function is robust against classes with zero samples and avoids division-by-zero.
+    - If no samples are present in the dataloader, raises a ValueError.
+    - For classes with zero samples, the class weight is set to 0.0 (these classes will not be sampled).
+    - For present classes, weight = max_count / class_count (so rarer classes get larger weight).
 
-    for data in tqdm(dataloader):
-        for i, c in zip(data["idx"].tolist(), data[class_label].tolist()):
-            class_weights[c] += 1
-            sample_weights[i] = c
+    Returns:
+        sample_weights: list[float] sized as the dataset (weight per sample index)
+        class_weights: list[float] sized `num_classes` (weight per class id)
+    """
+    # Count occurrences per class and record label per sample index
+    class_counts = [0] * num_classes
+    sample_labels: list[int | None] = [None] * len(dataloader.dataset)
 
-    max_class_weight = max(class_weights)
-    class_weights = [max_class_weight / class_weight for class_weight in class_weights]
+    for batch in tqdm(dataloader, desc="Computing class weights"):
+        # Expect `idx` and the `class_label` in the batch
+        idxs = batch["idx"].tolist()
+        labels = batch[class_label].tolist()
+        for i, c in zip(idxs, labels):
+            # Ensure label is an int index and within bounds
+            try:
+                ci = int(c)
+            except Exception:
+                raise ValueError(
+                    f"Encountered non-integer class label: {c!r} at sample idx {i}"
+                )
 
-    for i in range(len(sample_weights)):
-        sample_weights[i] = class_weights[sample_weights[i]]
+            if ci < 0 or ci >= num_classes:
+                raise ValueError(
+                    f"Class label {ci} at sample idx {i} is out of expected range [0, {num_classes - 1}]"
+                )
+
+            class_counts[ci] += 1
+            sample_labels[i] = ci
+
+    # If no samples were found in the dataloader, fail early
+    if sum(class_counts) == 0:
+        raise ValueError("No samples found in dataloader while computing class weights")
+
+    # Compute class weights while avoiding division by zero
+    nonzero_counts = [c for c in class_counts if c > 0]
+    max_count = max(nonzero_counts) if nonzero_counts else 0
+
+    class_weights = []
+    for count in class_counts:
+        if count == 0:
+            # No samples for this class -> weight 0 (will not be sampled)
+            class_weights.append(0.0)
+        else:
+            # Larger weight for rarer classes
+            class_weights.append(float(max_count) / float(count))
+
+    # Build per-sample weights using computed class weights.
+    sample_weights = [0.0] * len(sample_labels)
+    for i, label in enumerate(sample_labels):
+        if label is None:
+            # If a sample had no label recorded (shouldn't happen in normal use), set weight 0
+            sample_weights[i] = 0.0
+        else:
+            sample_weights[i] = class_weights[label]
 
     return sample_weights, class_weights
 

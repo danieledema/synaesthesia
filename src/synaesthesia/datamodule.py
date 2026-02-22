@@ -66,26 +66,55 @@ class ParsedDataModule(LightningDataModule):
         )
 
     def save(self, path, current_cfg, overwrite=True):
+        """
+        Save train/val/test datasets and the current configuration into a cache folder.
+
+        Notes:
+        - This method pickles dataset objects which may not be portable across
+          different Python interpreter versions or environments and may fail
+          if dataset objects contain unpicklable state (open file handles,
+          local lambdas, C-extension objects, etc.). Only load caches that you
+          trust and that were created in compatible environments.
+        - To reduce accidental mistakes, the method creates the target directory
+          if missing and avoids shadowing variables used for file handles.
+        """
         root_path = Path(path)
+
+        # Ensure destination exists (or allow overwrite semantics)
         if root_path.exists() and not overwrite:
-            raise IOError(f"File {path} already exists and not overwriting")
+            raise IOError(f"Path {root_path} already exists and not overwriting")
+
+        root_path.mkdir(parents=True, exist_ok=True)
 
         train_path = root_path / "train_dataset.pkl"
         val_path = root_path / "val_dataset.pkl"
         test_path = root_path / "test_dataset.pkl"
-
-        with open(train_path, "wb") as path:
-            pickle.dump(self.train_dataset, path)
-
-        with open(val_path, "wb") as path:
-            pickle.dump(self.val_dataset, path)
-
-        with open(test_path, "wb") as path:
-            pickle.dump(self.test_dataset, path)
-
         config_cache_path = root_path / "config.pkl"
-        with open(config_cache_path, "wb") as path:
-            pickle.dump(current_cfg, path)
+
+        try:
+            # Use clear variable names for file handles (avoid shadowing)
+            with open(train_path, "wb") as f_train:
+                pickle.dump(self.train_dataset, f_train)
+
+            with open(val_path, "wb") as f_val:
+                pickle.dump(self.val_dataset, f_val)
+
+            with open(test_path, "wb") as f_test:
+                pickle.dump(self.test_dataset, f_test)
+
+            with open(config_cache_path, "wb") as f_cfg:
+                pickle.dump(current_cfg, f_cfg)
+
+        except Exception as e:
+            # Clean up any partially written files to avoid leaving a corrupt cache
+            for p in (train_path, val_path, test_path, config_cache_path):
+                try:
+                    if p.exists():
+                        p.unlink()
+                except Exception:
+                    # Ignore cleanup errors; we want to expose the original error
+                    pass
+            raise IOError(f"Failed to pickle datasets to {root_path}: {e!s}") from e
 
     @staticmethod
     def load(

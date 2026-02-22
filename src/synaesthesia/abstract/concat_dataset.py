@@ -1,3 +1,5 @@
+from loguru import logger
+
 from .dataset_base import DatasetBase
 
 
@@ -49,9 +51,17 @@ class CustomConcatDataset(DatasetBase):
 
     @property
     def timestamps(self):
+        """
+        Return a flat list of timestamps for the concatenated datasets.
+
+        NOTE: return a list (not a generator) and use the datasets' `timestamps`
+        property (not callable). This keeps behavior consistent with other
+        DatasetBase implementations that expose a list of timestamps.
+        """
+        merged = []
         for d in self.datasets:
-            for t in d.timestamps():
-                yield t
+            merged.extend(d.timestamps)
+        return merged
 
     def __repr__(self) -> str:
         print_string = f"\nConcat dataset: {len(self)} samples\n"
@@ -74,9 +84,19 @@ class CustomConcatDataset(DatasetBase):
 
     @property
     def machine_name(self):
-        # C'e' da mettere machine anche qui, ed il nome dobbiamo capire come definirlo se ci sono piu' machines, e.g. "left/right arm"
-        print("[WARNING] ConcatDataset does not have a machine name")
-        return self.datasets[0].machine_name
+        """
+        The concatenated dataset may represent multiple machines. Return a
+        combined representation (the first name) but log a warning if there
+        are multiple distinct machine names.
+        """
+        machine_names = list({d.machine_name for d in self.datasets})
+        if len(machine_names) > 1:
+            logger.warning(
+                "ConcatDataset contains multiple machine names; returning the first one. Combined: %s",
+                ", ".join(machine_names),
+            )
+        # Fall back to the first dataset's machine_name if available
+        return machine_names[0] if machine_names else ""
 
     @property
     def sensor_ids(self) -> list[str]:
