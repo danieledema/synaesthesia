@@ -1,19 +1,34 @@
-# Claude Developer Guide — Synaesthesia
+# Developer & Contributor Guide — Synaesthesia
 
-This document is a focused developer guide for working on the `synaesthesia` repository. It explains the project's purpose, directory layout, core abstractions, development workflows, testing, debugging tips, and suggestions for common tasks (adding datasets, collates, datamodules, etc.). Use this as a living guide while contributing or extending the library.
-
-Note: paths, classes and functions are referenced with backticks (e.g. `DatasetBase`, `CsvDataset`) and file paths use repository-relative notation (e.g. `src/synaesthesia/...`).
+This document serves as the technical specification for the `synaesthesia` repository. Use this as the primary context when extending the library or onboarding new AI agents.
 
 ---
 
-## Quick summary
+## Technical Requirements
 
-- Purpose: Provide composable dataset primitives (CSV, image, multi-file, sequential, multi-signal, concat) and utilities for building PyTorch / PyTorch Lightning data pipelines.
-- Language: Python (typed hints present).
-- Packaging: `pyproject.toml` present.
-- Tests: `tests/` folder exists (run with `pytest`).
-- Pre-commit hooks: `.pre-commit-config.yaml` exists — follow them to keep style/quality consistent.
-- README: `README.md` contains overview and usage examples.
+- **Python:** 3.12+ (Type hints are mandatory for all new PRs).
+- **Core Stack:** PyTorch, PyTorch Lightning, Kornia (for GPU-accelerated transforms), Pandas.
+- **Tooling:** `pytest` for testing, `pre-commit` for linting (Black/Ruff).
+
+---
+
+## Core Abstractions & Logic
+
+### 1. The `DatasetBase` Contract
+Every dataset must inherit from `DatasetBase`. 
+- **`get_data(idx)`**: Must return a `dict`. Keys should be prefixed with the dataset `id` to avoid collisions during fusion.
+- **`machine_name`**: Must be **CamelCase**. This is enforced via `utils.check_camel_case_format` to ensure consistent logging and configuration keys.
+- **Timestamps**: All synchronization relies on integer timestamps (typically Unix epoch in ms or ns).
+
+### 2. Multi-Signal Synchronization
+The `MultiSignalDataset` is the "brain" of the library. It uses three primary strategies:
+- **Aggregation (`all` vs `common`)**: Determines if the master timestamp list is the Union or Intersection of all sub-datasets.
+- **Fill (`none`, `last`, `closest`)**: Determines how to handle missing data when one sensor is faster than another.
+
+### 3. Resource Management (Crucial)
+When implementing file-based or video-based datasets (like `ImageFromVideoDataset`):
+- **Lazy Loading**: Do not open file handles in `__init__`. Open them inside `get_data`.
+- **Worker Safety**: Because PyTorch `DataLoader` uses `num_workers > 0` (multiprocessing), file handles must be unique per process. Always check if a handle exists before using it.
 
 ---
 
@@ -90,23 +105,37 @@ Note: paths, classes and functions are referenced with backticks (e.g. `DatasetB
 
 ---
 
-## How to run & test locally
+## Development Workflow
 
-1. Create a Python virtual environment and install dev dependencies.
-   - Project uses `pyproject.toml`. Choose your tool:
-     - `pip install -e .[dev]` or use `poetry install` or `pipx/uv` as preferred.
-   - Ensure `kornia`, `pytorch`, `torchvision`, `pytorch-lightning`, `pytest`, `loguru`, `tqdm`, `pandas`, `pyinputplus`, and other listed deps are available.
+### Adding a New Sensor
+1. **Inherit** for isntance from `MultiFileDataset` (for files) or `CsvDataset` (for tabular).
+2. **Implement `parse_filename`**: Logic to extract the integer timestamp from the source.
+3. **Implement `read_data`**: Return a dictionary of tensors/arrays.
+4. **Register `sensor_ids`**: A list of strings representing the keys returned by `read_data`.
 
-2. Run tests:
-   - From repo root:
-     - `python -m pytest -q`
-     - Or simply `pytest`
+### Testing Standards
+We use `pytest`. Every new dataset **must** have a corresponding test in `tests/`.
+- Use `tmp_path` fixtures to create dummy CSVs/Images.
+- Assert that `get_timestamp_idx` returns the correct index for a known timestamp.
+- Verify that `SequentialDataset` correctly handles boundaries (e.g., not returning a sequence that starts before index 0).
 
-3. Pre-commit:
-   - Run configured pre-commit hooks (recommended): `pre-commit run --all-files`
+---
 
-4. Linting/formatting:
-   - Follow the style enforced by pre-commit. If a formatter (e.g. `black`) is configured, run it before committing.
+## Common Pitfalls & Debugging
+
+- **Shape Mismatches**: `BatchCollate` expects consistent tensor shapes. If your sensor returns variable-sized images, you **must** add a resize/pad transform in a `Collate` class, not in the dataset itself.
+- **Timestamp Drift**: If sensors are not perfectly synced, use `fill='closest'` in `MultiSignalDataset` but monitor the time delta in your logs.
+- **Pickling Errors**: `ParsedDataModule` caches datasets using `pickle`. Ensure your custom classes don't hold un-picklable objects (like open database connections).
+
+---
+
+## Typical Task Checklist
+- [ ] Implement subclass in `src/synaesthesia/base_sensors/`.
+- [ ] Add type hints to all methods.
+- [ ] Ensure `machine_name` is CamelCase.
+- [ ] Add unit tests in `tests/`.
+- [ ] Run `pre-commit run --all-files`.
+```
 
 ---
 
@@ -125,112 +154,3 @@ Note: paths, classes and functions are referenced with backticks (e.g. `DatasetB
 - Documentation:
   - Update `docs/` for new classes or behavioural changes.
   - Keep README examples up to date.
-
----
-
-## Typical development tasks
-
-### Adding a new file-based dataset
-
-1. Create a subclass of `MultiFileDataset` in `src/synaesthesia/base_sensors/` (e.g. `my_sensor_dataset.py`).
-2. Implement:
-   - `parse_filename(self, filename) -> int` — extracts numeric timestamp/index from filename.
-   - `read_data(self, file_path: Path) -> Any` — read file and return dict mapping sensor keys to values.
-   - `sensor_ids` property (if different from default).
-3. Add unit tests in `tests/` that:
-   - Create temp files with expected filenames and content.
-   - Instantiate the dataset and assert `__len__`, `get_data`, `timestamps`, and `get_timestamp_idx` behave correctly.
-
-Example skeleton:
-```/dev/null/example.py#L1-40
-from src.synaesthesia.base_sensors.multi_file_dataset import MultiFileDataset
-from pathlib import Path
-
-class MySensorDataset(MultiFileDataset):
-    def parse_filename(self, filename) -> int:
-        # Parse timestamp from filename, e.g. "12345.png" -> 12345
-        return int(Path(filename).stem)
-
-    def read_data(self, file_path: Path):
-        # Load and return a dict of sensor data
-        data = ...  # open file_path
-        return {"value": data}
-
-    @property
-    def sensor_ids(self):
-        return ["value"]
-```
-
-(Place the actual file in `src/synaesthesia/base_sensors/` and tests under `tests/`.)
-
-### Adding a new collate or augmentation
-
-1. Add a `CollateBase` subclass in `src/synaesthesia/collates.py`. Reuse existing patterns:
-   - Implement `do_collate(self, items)` and optionally an `__init__` to configure behaviour.
-2. Keep collates composable: use `ListCollate` to chain collates.
-3. Add tests to verify outputs for small synthetic batches (dictionaries with consistent keys).
-
-### Extending `CsvDataset`
-
-- Subclass `CsvDataset` and implement `convert_timestamp` to parse your CSV timestamp format (e.g. ISO string -> epoch int).
-- Use `cols` parameter to select appropriate columns.
-- Example in tests: create a temporary CSV with `timestamp` column and some numeric columns, instantiate your subclass and validate outputs.
-
----
-
-## Debugging tips & common pitfalls
-
-- Multiprocessing & file handles:
-  - `ImageFromVideoDataset` uses `cv2.VideoCapture`. When using DataLoader with `num_workers > 0`, make sure file handles are opened in the worker process. `get_data` checks and opens `cap` when needed, but be mindful of resource cleanup (`__del__` / `close()`).
-- Timestamp alignment:
-  - `MultiSignalDataset` has non-trivial logic for merging timestamps and fill strategies. When debugging synchronization mismatches, print or inspect:
-    - `dataset.timestamps` for each single-signal source.
-    - `multi.timestamps` and `multi.data_dict` to see mapped indices.
-- Camel-case machine names:
-  - `DatasetBase.machine_name` is validated by `check_camel_case_format`. If tests throw `ValueError` about camel-case, rename the machine identifier to conform to pattern `([A-Z]?[a-z]+)+[0-9]*$`.
-- Collate type errors:
-  - `BatchCollate.make_into_tensor` expects consistent shapes for tensors. If your dataset returns heterogeneous shapes, either:
-    - Pad / normalize shapes in dataset or a collate transform.
-    - Return lists for non-uniform items (the collate will return lists, not tensors).
-
----
-
-## Packaging and releases
-
-- The project uses `pyproject.toml`. Use your preferred toolchain to build and publish (e.g. `build` / `twine`, or `poetry`).
-- Ensure tests pass and the README/docs are updated before publishing.
-- Update the `uv.lock` / lockfile if the dependency manager expects it (the README mentions `uv add synaesthesia`).
-
----
-
-## Running an example pipeline
-
-1. Instantiate raw datasets:
-   - `csv_ds = CsvSubclass(path=...)`
-   - `img_ds = ImageDataset(folder_path=..., extension='png')`
-2. Combine:
-   - `multi = MultiSignalDataset([csv_ds, img_ds], aggregation='all', fill='closest')`
-3. Wrap sequences (if needed):
-   - `seq = SequentialDataset(multi, n_samples=5, stride=1)`
-4. Create `ParsedDataModule` or pass dataset to `DataLoader` directly:
-   - `dm = ParsedDataModule(train_dataset=seq, val_dataset=..., test_dataset=..., batch_size=32, num_workers=4)`
-   - `train_loader = dm.train_dataloader()`
-
----
-
-## TODOs and improvement ideas
-
-- Add more robust timestamp types (e.g. native `datetime` / `pandas.Timestamp`) with consistent conversions.
-- Improve `MultiSignalDataset` performance for very large timestamp sets (consider using numpy arrays and vectorized ops).
-- Add more unit tests around edge cases for `fill='last'` and `fill='closest'`.
-- Add CI (if not present) to run tests + pre-commit on PRs.
-- Add examples/notebooks under `docs/` showing common dataset composition workflows.
-
----
-
-If you want, I can:
-- Create an initial test template for a new `MultiFileDataset` subclass.
-- Add a CONTRIBUTING.md with these guidelines turned into checklist items.
-- Implement any of the TODO items above.
-
-Tell me which task to start and I will provide the code and tests.

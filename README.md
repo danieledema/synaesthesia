@@ -26,7 +26,7 @@ uv add synaesthesia
 pip install synaesthesia
 ```
 
-*Note: Requires Python 3.10+, PyTorch, and PyTorch Lightning.*
+*Note: Requires Python 3.12+, PyTorch, and PyTorch Lightning.*
 
 ## Quick Start 🚀
 
