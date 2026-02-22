@@ -32,7 +32,9 @@ def test_calculate_class_weights_with_zero_count_class():
     dataset = SimpleLabelDataset(labels, label_key="label")
     dataloader = DataLoader(dataset, batch_size=2, shuffle=False)
 
-    sample_weights, class_weights = calculate_class_weights(dataloader, class_label="label", num_classes=3)
+    sample_weights, class_weights = calculate_class_weights(
+        dataloader, class_label="label", num_classes=3
+    )
 
     # Expect class counts: [3,0,1] -> nonzero max_count = 3
     # So weights should be: class0 = 3/3 = 1.0, class1 = 0.0 (absent), class2 = 3/1 = 3.0

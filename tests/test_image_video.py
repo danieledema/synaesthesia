@@ -110,7 +110,9 @@ def test_image_from_video_dataset(tmp_path: Path):
     assert frame0.shape[0] == 3
     assert frame0.shape[1] == h and frame0.shape[2] == w
     # blue channel value should match what was written for frame 0
-    assert frame0[2, 0, 0] == 0 or frame0[0, 0, 0] == 0  # Accept either ordering if implementation differs
+    assert (
+        frame0[2, 0, 0] == 0 or frame0[0, 0, 0] == 0
+    )  # Accept either ordering if implementation differs
 
     mid = ds[num_frames // 2]
     assert "camera-RGB" in mid

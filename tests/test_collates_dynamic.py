@@ -30,12 +30,16 @@ def test_match_keys_is_dynamic_across_calls():
     # First batch contains keys 'a' and 'b'
     batch1 = [{"a": 1, "b": 2}]
     out1 = collate(batch1)
-    assert set(out1["matched_keys"]) == {"a", "b"}, "First call should match 'a' and 'b'"
+    assert set(out1["matched_keys"]) == {"a", "b"}, (
+        "First call should match 'a' and 'b'"
+    )
 
     # Second batch contains keys 'a' and 'c' (different from the first batch)
     batch2 = [{"a": 3, "c": 4}]
     out2 = collate(batch2)
-    assert set(out2["matched_keys"]) == {"a", "c"}, "Second call should match 'a' and 'c' (dynamic keys)"
+    assert set(out2["matched_keys"]) == {"a", "c"}, (
+        "Second call should match 'a' and 'c' (dynamic keys)"
+    )
 
     # Third call: only a single key matching none of the patterns -> matched_keys should be empty
     batch3 = [{"x": 10, "y": 20}]
@@ -45,4 +49,6 @@ def test_match_keys_is_dynamic_across_calls():
     # Fourth call: multiple items in the batch with differing key sets; the union of keys should be considered
     batch4 = [{"a": 1}, {"b": 2}, {"c": 3, "z": 0}]
     out4 = collate(batch4)
-    assert set(out4["matched_keys"]) == {"a", "b", "c"}, "Union of keys across items should be matched"
+    assert set(out4["matched_keys"]) == {"a", "b", "c"}, (
+        "Union of keys across items should be matched"
+    )

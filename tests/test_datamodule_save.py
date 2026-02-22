@@ -61,7 +61,9 @@ def test_save_cleanup_on_pickle_error(tmp_path):
 
     # After the failure, none of the expected files should remain
     for p in _list_expected_paths(root):
-        assert not p.exists(), f"Expected {p} to be removed after failure but it exists."
+        assert not p.exists(), (
+            f"Expected {p} to be removed after failure but it exists."
+        )
 
 
 def test_save_success_writes_files(tmp_path):
@@ -81,7 +83,11 @@ def test_save_success_writes_files(tmp_path):
         num_workers=0,
     )
 
-    cfg = {"train_dataset": "train_cfg", "val_dataset": "val_cfg", "test_dataset": "test_cfg"}
+    cfg = {
+        "train_dataset": "train_cfg",
+        "val_dataset": "val_cfg",
+        "test_dataset": "test_cfg",
+    }
 
     root = tmp_path / "cache_dir_ok"
     dm.save(root, cfg, overwrite=True)

@@ -23,7 +23,9 @@ def test_custom_concat_dataset_timestamps_property():
     # timestamps should be a list (not a generator) and equal to ds1.timestamps + ds2.timestamps
     assert isinstance(concat.timestamps, list), "timestamps should be a list"
     expected = list(ds1.timestamps) + list(ds2.timestamps)
-    assert concat.timestamps == expected, "Concat timestamps should equal concatenation of inner timestamps"
+    assert concat.timestamps == expected, (
+        "Concat timestamps should equal concatenation of inner timestamps"
+    )
 
     # length should match
     assert len(concat.timestamps) == len(ds1) + len(ds2)
