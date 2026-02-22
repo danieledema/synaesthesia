@@ -94,9 +94,9 @@ def test_sequential_dataset_data_values(common_setup, ground_truth_data):
     # Validate the data returned by the dataset
     for idx, expected in enumerate(ground_truth_data):
         actual = sensor_dataset.get_data(idx)
-        assert (
-            actual == expected
-        ), f"Data mismatch at index {idx}: expected {expected}, got {actual}"
+        assert actual == expected, (
+            f"Data mismatch at index {idx}: expected {expected}, got {actual}"
+        )
 
 
 def test_sequential_dataset_timestamp_indexing(common_setup, expected_timestamps):
@@ -117,9 +117,9 @@ def test_sequential_dataset_timestamp_indexing(common_setup, expected_timestamps
         for idx, expected_timestamp in enumerate(expected_timestamps_for_idx):
             actual_data = sensor_dataset.__getitem__(idx)
             actual_timestamp = actual_data["timestamp"]
-            assert (
-                actual_timestamp == expected_timestamp
-            ), f"Timestamp mismatch at index {idx}: expected {expected_timestamp}, got {actual_timestamp}"
+            assert actual_timestamp == expected_timestamp, (
+                f"Timestamp mismatch at index {idx}: expected {expected_timestamp}, got {actual_timestamp}"
+            )
 
 
 def test_sequential_dataset_length(common_setup):
@@ -135,9 +135,9 @@ def test_sequential_dataset_length(common_setup):
     )
 
     # Validate dataset length
-    assert (
-        len(sensor_dataset) == 9
-    ), f"Expected dataset length 9, but got {len(sensor_dataset)}"
+    assert len(sensor_dataset) == 9, (
+        f"Expected dataset length 9, but got {len(sensor_dataset)}"
+    )
 
 
 def test_sequential_dataset_idxs(common_setup):
@@ -159,6 +159,6 @@ def test_sequential_dataset_idxs(common_setup):
     # Validate idxs property
     actual_idxs = sensor_dataset.idxs
 
-    assert (
-        actual_idxs == expected_idxs
-    ), f"Expected idxs {expected_idxs}, but got {actual_idxs}"
+    assert actual_idxs == expected_idxs, (
+        f"Expected idxs {expected_idxs}, but got {actual_idxs}"
+    )

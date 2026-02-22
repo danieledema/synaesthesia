@@ -19,9 +19,9 @@ from src.synaesthesia.abstract.filter_functions import (
 )
 def test_skip_n_filter(skip_n, num_samples, expected_skip_n_indices):
     filter = SkipNFilter(skip_n=skip_n)
-    assert (
-        filter.get_indices(n_samples=num_samples) == expected_skip_n_indices
-    ), f"Failed for skip_n={skip_n}, num_samples={num_samples}"
+    assert filter.get_indices(n_samples=num_samples) == expected_skip_n_indices, (
+        f"Failed for skip_n={skip_n}, num_samples={num_samples}"
+    )
 
 
 # Test cases for MultipleNFilter
@@ -41,9 +41,9 @@ def test_skip_n_filter(skip_n, num_samples, expected_skip_n_indices):
 )
 def test_multiple_n_filter(multiple, num_samples, expected_multiple_indices):
     filter = MultipleNFilter(multiple=multiple)
-    assert (
-        filter.get_indices(n_samples=num_samples) == expected_multiple_indices
-    ), f"Failed for multiple={multiple}, num_samples={num_samples}"
+    assert filter.get_indices(n_samples=num_samples) == expected_multiple_indices, (
+        f"Failed for multiple={multiple}, num_samples={num_samples}"
+    )
 
 
 # Test cases for ExponentialFilter
@@ -67,6 +67,6 @@ def test_multiple_n_filter(multiple, num_samples, expected_multiple_indices):
 )
 def test_exponential_filter(base, num_samples, expected_exponential_indices):
     filter = ExponentialFilter(base=base)
-    assert (
-        filter.get_indices(n_samples=num_samples) == expected_exponential_indices
-    ), f"Failed for base={base}, num_samples={num_samples}"
+    assert filter.get_indices(n_samples=num_samples) == expected_exponential_indices, (
+        f"Failed for base={base}, num_samples={num_samples}"
+    )
