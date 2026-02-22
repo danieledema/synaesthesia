@@ -1,92 +1,69 @@
 # Synaesthesia 🧠🎨
 
-Create general PyTorch data pipelines from simple Python, extendable to any sensors.
+**Composable PyTorch Data Pipelines for Multi-Modal Sensor Fusion.**
 
 ## Overview 🌟
 
-Synaesthesia is a Python library that forms the foundation of a dataset stack in any PyTorch/PyTorch Lightning projects. It contains base datasets and structures that enable combination, sequencing, concatenation, and other transformations through composition mechanisms.
-
-This library provides a flexible and modular approach to creating datasets and dataloaders for various applications. It's designed to handle different data types, including CSV and image datasets, with the ability to expand functionality through custom classes.
+Synaesthesia is a modular Python library designed to be the foundation of your data stack. It allows you to build complex, multi-modal PyTorch/PyTorch Lightning datasets by composing simple primitives. Whether you are dealing with synchronized CSV logs, high-speed video, or multi-spectral imagery, Synaesthesia handles the alignment, sequencing, and batching.
 
 ## Key Features 🔑
 
-- **Modular Design** 🧩: Easily combine different dataset types and operations.
-- **Multi-modal Support** 🎛️: Handle various sensor modalities and information types.
-- **Flexible Combinations** 🔗:
-  - Parallel combination of datasets (MultiSignalDataset)
-  - Serial concatenation of datasets (ConcatDataset)
-  - Sequential data retrieval (SequentialDataset)
-- **Extensibility** 🔌: Users can create custom dataset classes to extend functionality.
-- **Built-in Support** 📦: Ready-to-use implementations for CSV and image datasets.
+- **Modular Composition** 🧩: Mix and match datasets like LEGO bricks.
+- **Multi-modal Alignment** 📡: Automatically synchronize different sensors via timestamps.
+- **Flexible Strategies**:
+  - **Parallel**: `MultiSignalDataset` for sensor fusion.
+  - **Serial**: `CustomConcatDataset` for combining multiple runs/sessions.
+  - **Temporal**: `SequentialDataset` for time-series and RNN/Transformer inputs.
+- **Lightning Ready** ⚡: Built-in `ParsedDataModule` for seamless PyTorch Lightning integration.
 
 ## Installation 💻
 
-The easiest way of using Synaesthesia is to installe it via `pip`, or, like here, `uv`:
-
 ```bash
+# Using uv (recommended)
 uv add synaesthesia
+
+# Using pip
+pip install synaesthesia
 ```
 
-## Main Components 🧱
+*Note: Requires Python 3.10+, PyTorch, and PyTorch Lightning.*
 
-### DatasetBase 🏗️
-
-The foundation class for all datasets in the library.
-
-### CustomConcatDataset 🔗
-
-Allows concatenation of multiple datasets, preserving individual dataset properties.
-
-### MultiSignalDataset 📡
-
-Combines multiple single-signal datasets, supporting various aggregation and fill methods.
-
-### SequentialDataset 🔢
-
-Enables retrieval of data sequences from a base dataset, with customizable filtering and stride options.
-
-### Filter Classes 🔍
-
-Provides different strategies for data filtering and selection:
-- `SkipNFilter`
-- `MultipleNFilter`
-- `ExponentialFilter`
-
-## Usage Examples 📚
+## Quick Start 🚀
 
 ```python
-# Example 1: Creating a multi-signal dataset
-csv_dataset = CSVDataset(...)
-image_dataset = ImageDataset(...)
-multi_dataset = MultiSignalDataset([csv_dataset, image_dataset])
+from synaesthesia.base_sensors import CsvDataset, ImageDataset
+from synaesthesia.abstract import MultiSignalDataset, SequentialDataset
 
-# Example 2: Creating a sequential dataset
-seq_dataset = SequentialDataset(csv_dataset, n_samples=5, stride=2)
+# 1. Define your raw sensors
+csv_ds = CsvDataset(path="telemetry.csv", cols=["speed", "accel"])
+img_ds = ImageDataset(folder_path="camera_frames/", extension="jpg")
 
-# Example 3: Concatenating datasets
-concat_dataset = CustomConcatDataset([dataset1, dataset2, dataset3])
+# 2. Synchronize them (aligns timestamps automatically)
+multi_ds = MultiSignalDataset([csv_ds, img_ds], aggregation="common", fill="closest")
+
+# 3. Create sequences (e.g., 5-frame windows for a GRU)
+seq_ds = SequentialDataset(multi_ds, n_samples=5, stride=1)
+
+# 4. Access data
+sample = seq_ds[0] 
+# Returns: {'csv_id': ..., 'image_id': ..., 'timestamps': [...]}
 ```
 
-## Extending the Library 🚀
+## Architecture 🏗️
 
-Users can create custom dataset classes by inheriting from `DatasetBase` and implementing required methods:
-
-```python
-class MyCustomDataset(DatasetBase):
-    def __init__(self, ...):
-        super().__init__()
-        # Custom initialization
-
-    def get_data(self, idx):
-        # Implement data retrieval logic
-
-    # Implement other required methods
+```mermaid
+graph TD
+    A[CsvDataset] --> D[MultiSignalDataset]
+    B[ImageDataset] --> D
+    C[CustomSensor] --> D
+    D --> E[SequentialDataset]
+    E --> F[PyTorch DataLoader]
 ```
 
 ## Contributing 🤝
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+If you want to build new sensor types or extend the core logic, please refer to the [Developer Guide (CONTRIBUTING.md)](./CONTRIBUTING.md).
 
 ## License 📄
 
-This project is licensed under the APACHE-2.0 License. See the [LICENSE](https://www.apache.org/licenses/LICENSE-2.0) file for details.
+Licensed under APACHE-2.0.
