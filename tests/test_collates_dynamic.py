@@ -1,5 +1,3 @@
-import pytest
-
 from src.synaesthesia.collates import CollateBase
 
 
