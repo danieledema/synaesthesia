@@ -135,7 +135,6 @@ We use `pytest`. Every new dataset **must** have a corresponding test in `tests/
 - [ ] Ensure `machine_name` is CamelCase.
 - [ ] Add unit tests in `tests/`.
 - [ ] Run `pre-commit run --all-files`.
-```
 
 ---
 
